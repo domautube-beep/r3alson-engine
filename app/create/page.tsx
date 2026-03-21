@@ -285,49 +285,34 @@ export default function CreatePage() {
           </div>
         )}
 
-        {/* ===== Step 2: 장르/무드/BPM 설정 ===== */}
+        {/* ===== Step 2: 순차 공개 곡 설정 ===== */}
         {step === 2 && (
           <div className="space-y-6">
             <h2 className="text-xl font-bold">곡 설정</h2>
-            <p className="text-sm" style={{ color: "#9CA3AF" }}>
+            <p className="text-sm" style={{ color: "#7A7A8E" }}>
               {mode === "trend" ? "트렌드 기반으로 세팅됨. 수정도 가능해요." :
                mode === "hybrid" ? "데이터 제안 + 자유롭게 수정하세요." :
-               "자유롭게 선택하세요. 트렌드 데이터는 참고용."}
+               "순서대로 선택하세요. 각 단계를 완료하면 다음이 열려요."}
             </p>
 
-            {/* ── 장르 선택 (카테고리별) ── */}
-            <div>
-              <label className="text-sm font-semibold block mb-2">장르</label>
-              {/* 카테고리 필터 */}
+            {/* ── 1. 장르 선택 (항상 보임) ── */}
+            <div className="glass-card p-4 fade-in">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: genre ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#1E1E2E", color: genre ? "white" : "#7A7A8E" }}>1</div>
+                <label className="text-sm font-semibold">장르</label>
+                {genre && <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(52, 211, 153, 0.1)", color: "#34D399" }}>{genre}</span>}
+              </div>
               <div className="flex flex-wrap gap-1.5 mb-3">
-                <button
-                  onClick={function() { setGenreCategory(""); }}
-                  className={"px-3 py-1 text-xs rounded-full transition-all " + (!genreCategory ? "mood-chip mood-chip-active" : "mood-chip")}
-                >전체</button>
+                <button onClick={function() { setGenreCategory(""); }} className={"px-3 py-1 text-xs rounded-full transition-all " + (!genreCategory ? "mood-chip mood-chip-active" : "mood-chip")}>전체</button>
                 {Object.keys(GENRE_CATEGORIES).map(function(cat) {
-                  return (
-                    <button
-                      key={cat}
-                      onClick={function() { setGenreCategory(cat); }}
-                      className={"px-3 py-1 text-xs rounded-full transition-all " + (genreCategory === cat ? "mood-chip mood-chip-active" : "mood-chip")}
-                    >{cat}</button>
-                  );
+                  return <button key={cat} onClick={function() { setGenreCategory(cat); }} className={"px-3 py-1 text-xs rounded-full transition-all " + (genreCategory === cat ? "mood-chip mood-chip-active" : "mood-chip")}>{cat}</button>;
                 })}
               </div>
-              {/* 장르 목록 */}
               <div className="flex flex-wrap gap-2">
                 {(genreCategory ? GENRE_CATEGORIES[genreCategory] : ALL_GENRES).map(function(g) {
                   var isSelected = genre === g;
                   var trend = trendsData.trends.find(function(t) { return t.genre === g; });
-                  return (
-                    <button
-                      key={g}
-                      onClick={function() { setGenre(g); }}
-                      className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}
-                    >
-                      {g}{trend ? " +" + trend.growth + "%" : ""}
-                    </button>
-                  );
+                  return <button key={g} onClick={function() { setGenre(g); }} className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}>{g}{trend ? " +" + trend.growth + "%" : ""}</button>;
                 })}
               </div>
               {genre && getCurrentTrendInfo() && (
@@ -335,125 +320,131 @@ export default function CreatePage() {
                   {getCurrentTrendInfo()!.growth > 0 ? "이 장르는 현재 성장 중" : "트렌드와 다른 선택도 차별화 전략이 될 수 있어요"}
                 </p>
               )}
-              {genre && !getCurrentTrendInfo() && (
-                <p className="text-xs mt-2" style={{ color: "#7A7A8E" }}>선택: {genre}</p>
-              )}
             </div>
 
-            {/* ── 무드 선택 (카테고리별) ── */}
-            <div>
-              <label className="text-sm font-semibold block mb-2">
-                무드 <span style={{ color: "#7A7A8E" }}>(여러 개 선택 가능)</span>
-              </label>
-              {/* 카테고리 필터 */}
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                <button
-                  onClick={function() { setMoodCategory(""); }}
-                  className={"px-3 py-1 text-xs rounded-full transition-all " + (!moodCategory ? "mood-chip mood-chip-active" : "mood-chip")}
-                >전체</button>
-                {Object.keys(MOOD_CATEGORIES).map(function(cat) {
+            {/* ── 2. 무드 선택 (장르 선택 후 공개) ── */}
+            {!genre ? (
+              <div className="glass-card p-4" style={{ opacity: 0.3 }}>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#1E1E2E", color: "#4A4A5E" }}>2</div>
+                  <label className="text-sm" style={{ color: "#4A4A5E" }}>무드 — 장르를 먼저 선택하세요</label>
+                </div>
+              </div>
+            ) : (
+              <div className="glass-card p-4 fade-in">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: selectedMoods.length > 0 ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#1E1E2E", color: selectedMoods.length > 0 ? "white" : "#7A7A8E" }}>2</div>
+                  <label className="text-sm font-semibold">무드 <span style={{ color: "#7A7A8E" }}>(여러 개)</span></label>
+                </div>
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  <button onClick={function() { setMoodCategory(""); }} className={"px-3 py-1 text-xs rounded-full transition-all " + (!moodCategory ? "mood-chip mood-chip-active" : "mood-chip")}>전체</button>
+                  {Object.keys(MOOD_CATEGORIES).map(function(cat) {
+                    return <button key={cat} onClick={function() { setMoodCategory(cat); }} className={"px-3 py-1 text-xs rounded-full transition-all " + (moodCategory === cat ? "mood-chip mood-chip-active" : "mood-chip")}>{cat}</button>;
+                  })}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(moodCategory ? MOOD_CATEGORIES[moodCategory] : ALL_MOODS).map(function(m) {
+                    var isSelected = selectedMoods.includes(m);
+                    return <button key={m} onClick={function() { toggleMood(m); }} className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}>{m}</button>;
+                  })}
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <input type="text" value={customMood} onChange={function(e) { setCustomMood(e.target.value); }} placeholder="직접 입력" className="input-dark text-sm" onKeyDown={function(e) { if (e.key === "Enter") addCustomMood(); }} />
+                  <button onClick={addCustomMood} className="px-4 py-2 rounded-xl text-sm font-medium" style={{ backgroundColor: "#8B5CF6", color: "white" }}>추가</button>
+                </div>
+                {selectedMoods.length > 0 && <p className="text-xs mt-2" style={{ color: "#8B5CF6" }}>선택됨: {selectedMoods.join(", ")}</p>}
+              </div>
+            )}
+
+            {/* ── 3. 보컬 스타일 (무드 선택 후 공개) ── */}
+            {selectedMoods.length === 0 ? (
+              <div className="glass-card p-4" style={{ opacity: 0.3 }}>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#1E1E2E", color: "#4A4A5E" }}>3</div>
+                  <label className="text-sm" style={{ color: "#4A4A5E" }}>보컬 — 무드를 먼저 선택하세요</label>
+                </div>
+              </div>
+            ) : (
+              <div className="glass-card p-4 fade-in">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: selectedVocal ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#1E1E2E", color: selectedVocal ? "white" : "#7A7A8E" }}>3</div>
+                  <label className="text-sm font-semibold">보컬 스타일</label>
+                  {selectedVocal && <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(52, 211, 153, 0.1)", color: "#34D399" }}>{selectedVocal}</span>}
+                </div>
+                {Object.entries(VOCAL_STYLES).map(function([cat, vocals]) {
                   return (
-                    <button
-                      key={cat}
-                      onClick={function() { setMoodCategory(cat); }}
-                      className={"px-3 py-1 text-xs rounded-full transition-all " + (moodCategory === cat ? "mood-chip mood-chip-active" : "mood-chip")}
-                    >{cat}</button>
+                    <div key={cat} className="mb-3">
+                      <p className="text-xs mb-1.5" style={{ color: "#7A7A8E" }}>{cat}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {vocals.map(function(v) {
+                          var isSelected = selectedVocal === v;
+                          return <button key={v} onClick={function() { setSelectedVocal(isSelected ? "" : v); }} className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}>{v}</button>;
+                        })}
+                      </div>
+                    </div>
                   );
                 })}
               </div>
-              {/* 무드 목록 */}
-              <div className="flex flex-wrap gap-2">
-                {(moodCategory ? MOOD_CATEGORIES[moodCategory] : ALL_MOODS).map(function(m) {
-                  var isSelected = selectedMoods.includes(m);
+            )}
+
+            {/* ── 4. 악기 선택 (보컬 선택 후 공개) ── */}
+            {!selectedVocal ? (
+              <div className="glass-card p-4" style={{ opacity: 0.3 }}>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#1E1E2E", color: "#4A4A5E" }}>4</div>
+                  <label className="text-sm" style={{ color: "#4A4A5E" }}>악기 — 보컬을 먼저 선택하세요</label>
+                </div>
+              </div>
+            ) : (
+              <div className="glass-card p-4 fade-in">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: selectedInstruments.length > 0 ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#1E1E2E", color: selectedInstruments.length > 0 ? "white" : "#7A7A8E" }}>4</div>
+                  <label className="text-sm font-semibold">악기 <span style={{ color: "#7A7A8E" }}>(여러 개, 선택 안 하면 자동)</span></label>
+                </div>
+                {Object.entries(INSTRUMENT_CATEGORIES).map(function([cat, instruments]) {
                   return (
-                    <button
-                      key={m}
-                      onClick={function() { toggleMood(m); }}
-                      className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}
-                    >{m}</button>
+                    <div key={cat} className="mb-3">
+                      <p className="text-xs mb-1.5" style={{ color: "#7A7A8E" }}>{cat}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {instruments.map(function(inst) {
+                          var isSelected = selectedInstruments.includes(inst);
+                          return <button key={inst} onClick={function() { toggleInstrument(inst); }} className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}>{inst}</button>;
+                        })}
+                      </div>
+                    </div>
                   );
                 })}
+                {selectedInstruments.length > 0 && <p className="text-xs mt-1" style={{ color: "#8B5CF6" }}>선택됨: {selectedInstruments.join(", ")}</p>}
               </div>
-              {/* 직접 입력 */}
-              <div className="flex gap-2 mt-3">
-                <input type="text" value={customMood} onChange={function(e) { setCustomMood(e.target.value); }} placeholder="직접 입력" className="input-dark text-sm" onKeyDown={function(e) { if (e.key === "Enter") addCustomMood(); }} />
-                <button onClick={addCustomMood} className="px-4 py-2 rounded-xl text-sm font-medium" style={{ backgroundColor: "#8B5CF6", color: "white" }}>추가</button>
+            )}
+
+            {/* ── 5. BPM (보컬 선택 후 공개) ── */}
+            {!selectedVocal ? (
+              <div className="glass-card p-4" style={{ opacity: 0.3 }}>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#1E1E2E", color: "#4A4A5E" }}>5</div>
+                  <label className="text-sm" style={{ color: "#4A4A5E" }}>BPM</label>
+                </div>
               </div>
-              {selectedMoods.length > 0 && (
-                <p className="text-xs mt-2" style={{ color: "#8B5CF6" }}>선택됨: {selectedMoods.join(", ")}</p>
-              )}
-            </div>
-
-            {/* ── 보컬 스타일 ── */}
-            <div>
-              <label className="text-sm font-semibold block mb-2">보컬 스타일</label>
-              {Object.entries(VOCAL_STYLES).map(function([cat, vocals]) {
-                return (
-                  <div key={cat} className="mb-3">
-                    <p className="text-xs mb-1.5" style={{ color: "#7A7A8E" }}>{cat}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {vocals.map(function(v) {
-                        var isSelected = selectedVocal === v;
-                        return (
-                          <button
-                            key={v}
-                            onClick={function() { setSelectedVocal(isSelected ? "" : v); }}
-                            className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}
-                          >{v}</button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* ── 악기 선택 (다중) ── */}
-            <div>
-              <label className="text-sm font-semibold block mb-2">
-                악기 <span style={{ color: "#7A7A8E" }}>(여러 개 선택 가능)</span>
-              </label>
-              {Object.entries(INSTRUMENT_CATEGORIES).map(function([cat, instruments]) {
-                return (
-                  <div key={cat} className="mb-3">
-                    <p className="text-xs mb-1.5" style={{ color: "#7A7A8E" }}>{cat}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {instruments.map(function(inst) {
-                        var isSelected = selectedInstruments.includes(inst);
-                        return (
-                          <button
-                            key={inst}
-                            onClick={function() { toggleInstrument(inst); }}
-                            className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}
-                          >{inst}</button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-              {selectedInstruments.length > 0 && (
-                <p className="text-xs mt-1" style={{ color: "#8B5CF6" }}>선택됨: {selectedInstruments.join(", ")}</p>
-              )}
-            </div>
-
-            {/* ── BPM ── */}
-            <div>
-              <label className="text-sm font-semibold block mb-2">
-                BPM: <span className="text-gradient font-bold">{bpm}</span>
-              </label>
-              <input type="range" min="50" max="180" value={bpm} onChange={function(e) { setBpm(parseInt(e.target.value)); }} className="w-full" />
-              <div className="flex justify-between text-xs" style={{ color: "#7A7A8E" }}>
-                <span>50 (느림)</span>
-                <span>{genre && getCurrentTrendInfo() ? "적정: " + getCurrentTrendInfo()!.avgBpm : "115 (보통)"}</span>
-                <span>180 (빠름)</span>
+            ) : (
+              <div className="glass-card p-4 fade-in">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "linear-gradient(135deg, #8B5CF6, #EC4899)", color: "white" }}>5</div>
+                  <label className="text-sm font-semibold">BPM: <span className="text-gradient font-bold">{bpm}</span></label>
+                </div>
+                <input type="range" min="50" max="180" value={bpm} onChange={function(e) { setBpm(parseInt(e.target.value)); }} className="w-full" />
+                <div className="flex justify-between text-xs" style={{ color: "#7A7A8E" }}>
+                  <span>50 (느림)</span>
+                  <span>{genre && getCurrentTrendInfo() ? "적정: " + getCurrentTrendInfo()!.avgBpm : "115 (보통)"}</span>
+                  <span>180 (빠름)</span>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* 다음 버튼 */}
             <button
               onClick={function () { setStep(3); }}
-              disabled={!genre || selectedMoods.length === 0}
+              disabled={!genre || selectedMoods.length === 0 || !selectedVocal}
               className={"w-full py-4 rounded-2xl font-bold text-white text-[15px] transition-all " + ((!genre || selectedMoods.length === 0) ? "opacity-30" : "glow-btn")}
             >
               다음: 가사 &rarr;
