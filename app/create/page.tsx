@@ -114,28 +114,21 @@ export default function CreatePage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* 헤더 */}
-      <header className="flex items-center px-4 py-4 border-b" style={{ borderColor: "#2A2A4A" }}>
-        <Link href="/" className="mr-3 text-lg" style={{ color: "#9CA3AF" }}>&#8592;</Link>
-        <div>
+      <header className="flex items-center px-5 py-5">
+        <Link href="/" className="mr-4 w-10 h-10 flex items-center justify-center rounded-full" style={{ backgroundColor: "#111118", color: "#7A7A8E" }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </Link>
+        <div className="flex-1">
           <h1 className="text-lg font-bold">새 곡 만들기</h1>
-          <p className="text-xs" style={{ color: "#9CA3AF" }}>
-            Step {step}/4
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            {[1,2,3,4].map(function(s) {
+              return <div key={s} className="h-1 flex-1 rounded-full transition-all duration-500" style={{ background: s <= step ? "linear-gradient(90deg, #8B5CF6, #EC4899)" : "#1E1E2E" }} />;
+            })}
+          </div>
         </div>
       </header>
 
-      {/* 프로그레스 바 */}
-      <div className="h-1" style={{ backgroundColor: "#1A1A2E" }}>
-        <div
-          className="h-full transition-all duration-300"
-          style={{
-            width: (step * 25) + "%",
-            background: "linear-gradient(to right, #8B5CF6, #EC4899)"
-          }}
-        />
-      </div>
-
-      <main className="flex-1 px-4 py-6 pb-8">
+      <main className="flex-1 px-5 py-4 pb-8">
 
         {/* ===== Step 1: 모드 선택 ===== */}
         {step === 1 && (
@@ -148,30 +141,40 @@ export default function CreatePage() {
             {/* 트렌드 모드 */}
             <button
               onClick={applyTrendMode}
-              className="w-full text-left rounded-2xl p-5 border transition-all"
-              style={{ backgroundColor: "#1A1A2E", borderColor: mode === "trend" ? "#8B5CF6" : "#2A2A4A" }}
+              className="w-full text-left glass-card p-5 transition-all fade-in stagger-1"
+              style={{ animationFillMode: "both" }}
             >
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-2xl">{"\uD83C\uDFAF"}</span>
-                <span className="font-bold text-lg">트렌드 모드</span>
+                <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl" style={{ background: "rgba(139, 92, 246, 0.15)" }}>
+                  {"\uD83C\uDFAF"}
+                </div>
+                <div>
+                  <span className="font-bold text-[15px] block">트렌드 모드</span>
+                  <span className="text-xs" style={{ color: "#7A7A8E" }}>가장 높은 스트리밍 확률</span>
+                </div>
               </div>
-              <p className="text-sm" style={{ color: "#9CA3AF" }}>
-                데이터가 추천하는 장르/무드로 시작. 가장 높은 스트리밍 확률.
+              <p className="text-sm leading-relaxed" style={{ color: "#7A7A8E" }}>
+                데이터가 추천하는 장르/무드로 자동 세팅.
               </p>
             </button>
 
             {/* 자유 모드 */}
             <button
               onClick={function () { setMode("free"); setStep(2); }}
-              className="w-full text-left rounded-2xl p-5 border transition-all"
-              style={{ backgroundColor: "#1A1A2E", borderColor: mode === "free" ? "#8B5CF6" : "#2A2A4A" }}
+              className="w-full text-left glass-card p-5 transition-all fade-in stagger-2"
+              style={{ animationFillMode: "both" }}
             >
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-2xl">{"\uD83C\uDFA8"}</span>
-                <span className="font-bold text-lg">자유 모드</span>
+                <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl" style={{ background: "rgba(236, 72, 153, 0.15)" }}>
+                  {"\uD83C\uDFA8"}
+                </div>
+                <div>
+                  <span className="font-bold text-[15px] block">자유 모드</span>
+                  <span className="text-xs" style={{ color: "#7A7A8E" }}>내 감성 100%</span>
+                </div>
               </div>
-              <p className="text-sm" style={{ color: "#9CA3AF" }}>
-                내 감성대로 장르/무드를 선택. 데이터는 참고만.
+              <p className="text-sm leading-relaxed" style={{ color: "#7A7A8E" }}>
+                내가 선택하고, 데이터는 참고만.
               </p>
             </button>
 
@@ -185,21 +188,26 @@ export default function CreatePage() {
                 setMode("hybrid");
                 setStep(2);
               }}
-              className="w-full text-left rounded-2xl p-5 border transition-all relative"
-              style={{ backgroundColor: "#1A1A2E", borderColor: mode === "hybrid" ? "#8B5CF6" : "#2A2A4A" }}
+              className="w-full text-left glass-card p-5 transition-all relative fade-in stagger-3"
+              style={{ animationFillMode: "both", borderColor: "rgba(139, 92, 246, 0.2)" }}
             >
               <span
-                className="absolute top-3 right-3 text-xs px-2 py-0.5 rounded-full font-semibold"
-                style={{ background: "linear-gradient(to right, #8B5CF6, #EC4899)", color: "white" }}
+                className="absolute top-4 right-4 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider"
+                style={{ background: "linear-gradient(135deg, #8B5CF6, #EC4899)", color: "white" }}
               >
                 추천
               </span>
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-2xl">{"\uD83D\uDD00"}</span>
-                <span className="font-bold text-lg">하이브리드 모드</span>
+                <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(236,72,153,0.2))" }}>
+                  {"\uD83D\uDD00"}
+                </div>
+                <div>
+                  <span className="font-bold text-[15px] block">하이브리드 모드</span>
+                  <span className="text-xs" style={{ color: "#7A7A8E" }}>확률 + 개성 둘 다</span>
+                </div>
               </div>
-              <p className="text-sm" style={{ color: "#9CA3AF" }}>
-                데이터가 제안하고, 내가 수정. 확률 + 개성 둘 다.
+              <p className="text-sm leading-relaxed" style={{ color: "#7A7A8E" }}>
+                데이터가 제안하고, 내가 터치를 더한다.
               </p>
             </button>
           </div>
@@ -221,8 +229,7 @@ export default function CreatePage() {
               <select
                 value={genre}
                 onChange={function (e) { setGenre(e.target.value); }}
-                className="w-full p-3 rounded-xl text-white border"
-                style={{ backgroundColor: "#0F0F23", borderColor: "#2A2A4A" }}
+                className="select-dark"
               >
                 <option value="">장르를 선택하세요</option>
                 {GENRES.map(function (g) {
@@ -252,12 +259,7 @@ export default function CreatePage() {
                     <button
                       key={m}
                       onClick={function () { toggleMood(m); }}
-                      className="px-3 py-1.5 text-sm rounded-full border transition-all"
-                      style={{
-                        backgroundColor: isSelected ? "rgba(139, 92, 246, 0.2)" : "transparent",
-                        borderColor: isSelected ? "#8B5CF6" : "#2A2A4A",
-                        color: isSelected ? "#8B5CF6" : "#9CA3AF"
-                      }}
+                      className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}
                     >
                       {m}
                     </button>
@@ -271,8 +273,7 @@ export default function CreatePage() {
                   value={customMood}
                   onChange={function (e) { setCustomMood(e.target.value); }}
                   placeholder="직접 입력"
-                  className="flex-1 px-3 py-2 rounded-xl text-sm border"
-                  style={{ backgroundColor: "#0F0F23", borderColor: "#2A2A4A", color: "#E5E5E5" }}
+                  className="input-dark text-sm"
                   onKeyDown={function (e) { if (e.key === "Enter") addCustomMood(); }}
                 />
                 <button
@@ -314,13 +315,9 @@ export default function CreatePage() {
             <button
               onClick={function () { setStep(3); }}
               disabled={!genre || selectedMoods.length === 0}
-              className="w-full py-4 rounded-2xl font-bold text-white text-lg transition-opacity"
-              style={{
-                background: (!genre || selectedMoods.length === 0) ? "#4B5563" : "linear-gradient(to right, #8B5CF6, #EC4899)",
-                opacity: (!genre || selectedMoods.length === 0) ? 0.5 : 1
-              }}
+              className={"w-full py-4 rounded-2xl font-bold text-white text-[15px] transition-all " + ((!genre || selectedMoods.length === 0) ? "opacity-30" : "glow-btn")}
             >
-              다음: 가사
+              다음: 가사 &rarr;
             </button>
           </div>
         )}
@@ -381,8 +378,7 @@ export default function CreatePage() {
                   value={lyricsTheme}
                   onChange={function (e) { setLyricsTheme(e.target.value); }}
                   placeholder="예: 새벽 3시의 고독, 이별 후 비 오는 거리"
-                  className="w-full p-3 rounded-xl border text-sm"
-                  style={{ backgroundColor: "#0F0F23", borderColor: "#2A2A4A", color: "#E5E5E5" }}
+                  className="input-dark text-sm"
                 />
               </div>
             )}
@@ -398,8 +394,7 @@ export default function CreatePage() {
                   onChange={function (e) { setGeneratedLyrics(e.target.value); }}
                   placeholder={"[Verse 1]\n가사를 입력하세요...\n\n[Chorus]\n후렴구를 입력하세요..."}
                   rows={10}
-                  className="w-full p-3 rounded-xl border text-sm"
-                  style={{ backgroundColor: "#0F0F23", borderColor: "#2A2A4A", color: "#E5E5E5" }}
+                  className="input-dark text-sm"
                 />
               </div>
             )}
@@ -408,12 +403,9 @@ export default function CreatePage() {
             <button
               onClick={generateAll}
               disabled={isGenerating}
-              className="w-full py-4 rounded-2xl font-bold text-white text-lg"
-              style={{
-                background: isGenerating ? "#4B5563" : "linear-gradient(to right, #8B5CF6, #EC4899)"
-              }}
+              className={"w-full py-4 rounded-2xl font-bold text-white text-[15px] transition-all " + (isGenerating ? "opacity-50" : "glow-btn")}
             >
-              {isGenerating ? "AI가 만들고 있어요..." : "프롬프트 + 메타데이터 생성"}
+              {isGenerating ? "AI가 만들고 있어요..." : "프롬프트 + 메타데이터 생성 \u2728"}
             </button>
           </div>
         )}
@@ -430,7 +422,7 @@ export default function CreatePage() {
             </div>
 
             {/* 수노 프롬프트 */}
-            <div className="rounded-2xl p-4 border" style={{ backgroundColor: "#1A1A2E", borderColor: "#2A2A4A" }}>
+            <div className="glass-card p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-semibold">{"\uD83C\uDFB5"} 수노 프롬프트</span>
                 <button
@@ -448,14 +440,13 @@ export default function CreatePage() {
                 value={generatedPrompt}
                 onChange={function (e) { setGeneratedPrompt(e.target.value); }}
                 rows={3}
-                className="w-full p-2 rounded-lg text-sm border"
-                style={{ backgroundColor: "#0F0F23", borderColor: "#2A2A4A", color: "#E5E5E5" }}
+                className="input-dark text-sm"
               />
             </div>
 
             {/* 가사 */}
             {generatedLyrics && (
-              <div className="rounded-2xl p-4 border" style={{ backgroundColor: "#1A1A2E", borderColor: "#2A2A4A" }}>
+              <div className="glass-card p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-semibold">{"\uD83D\uDCDD"} 가사</span>
                   <button
@@ -480,7 +471,7 @@ export default function CreatePage() {
             )}
 
             {/* 메타데이터 */}
-            <div className="rounded-2xl p-4 border" style={{ backgroundColor: "#1A1A2E", borderColor: "#2A2A4A" }}>
+            <div className="glass-card p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-semibold">{"\uD83C\uDFF7\uFE0F"} 메타데이터 (DistroKid용)</span>
                 <button
@@ -522,7 +513,7 @@ export default function CreatePage() {
             </div>
 
             {/* 다음 단계 가이드 */}
-            <div className="rounded-2xl p-4 border" style={{ backgroundColor: "#1A1A2E", borderColor: "#2A2A4A" }}>
+            <div className="glass-card p-4">
               <p className="text-sm font-semibold mb-3">{"\uD83D\uDCD6"} 다음 단계</p>
               <ol className="space-y-2 text-sm" style={{ color: "#9CA3AF" }}>
                 <li className="flex gap-2">
