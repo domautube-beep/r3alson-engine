@@ -70,6 +70,69 @@ var INSTRUMENT_CATEGORIES: Record<string, string[]> = {
   "분위기": ["Vinyl Crackle", "Rain Sounds", "Field Recordings", "Ambient Textures", "Tape Hiss", "Wind Chimes", "Music Box", "Bells"]
 };
 
+// ===== 장르별 연관 추천 매핑 =====
+var GENRE_RECOMMENDATIONS: Record<string, {
+  moods: string[];
+  vocals: string[];
+  instruments: string[];
+  bpm: number;
+}> = {
+  "Hip Hop": { moods: ["Groovy", "Bold", "Dark"], vocals: ["Male Rap", "Deep Male Vocals"], instruments: ["808 Bass", "Boom Bap Drums", "Drum Machine"], bpm: 90 },
+  "Trap": { moods: ["Dark", "Aggressive", "Intense"], vocals: ["Male Rap", "Auto-tuned Vocals"], instruments: ["808 Bass", "Trap Hi-Hats", "Sub Bass"], bpm: 140 },
+  "Boom Bap": { moods: ["Nostalgic", "Groovy", "Bold"], vocals: ["Male Rap", "Deep Male Vocals"], instruments: ["Boom Bap Drums", "Vinyl Crackle", "Piano"], bpm: 90 },
+  "Lo-Fi Hip Hop": { moods: ["Chill", "Nostalgic", "Dreamy"], vocals: ["Instrumental (No Vocals)", "Humming"], instruments: ["Lo-Fi Drums", "Vinyl Crackle", "Rhodes", "Piano"], bpm: 80 },
+  "Cloud Rap": { moods: ["Dreamy", "Ethereal", "Atmospheric"], vocals: ["Auto-tuned Vocals", "Breathy Female"], instruments: ["Pad Synth", "808 Bass", "Ambient Textures"], bpm: 130 },
+  "Drill": { moods: ["Aggressive", "Dark", "Intense"], vocals: ["Male Rap", "Female Rap"], instruments: ["808 Bass", "Trap Hi-Hats", "Lead Synth"], bpm: 140 },
+  "Phonk": { moods: ["Dark", "Aggressive", "Mysterious"], vocals: ["Male Rap", "Deep Male Vocals"], instruments: ["808 Bass", "Drum Machine", "Analog Synth"], bpm: 130 },
+  "Emo Rap": { moods: ["Melancholic", "Haunting", "Bittersweet"], vocals: ["Auto-tuned Vocals", "Raspy Male Vocals"], instruments: ["Electric Guitar", "808 Bass", "Piano"], bpm: 130 },
+  "Pop": { moods: ["Happy", "Bright", "Energetic"], vocals: ["Soft Female Vocals", "Smooth Male Vocals"], instruments: ["Analog Synth", "Live Drums", "Electric Piano"], bpm: 120 },
+  "Indie Pop": { moods: ["Warm", "Dreamy", "Nostalgic"], vocals: ["Soft Female Vocals", "Breathy Female"], instruments: ["Acoustic Guitar", "Piano", "Live Drums"], bpm: 110 },
+  "Synth Pop": { moods: ["Energetic", "Bright", "Futuristic"], vocals: ["Smooth Male Vocals", "Powerful Female Vocals"], instruments: ["Analog Synth", "Arpeggiated Synth", "Drum Machine"], bpm: 120 },
+  "K-Pop": { moods: ["Energetic", "Bold", "Euphoric"], vocals: ["Powerful Female Vocals", "Male Rap"], instruments: ["Analog Synth", "Live Drums", "Lead Synth", "808 Bass"], bpm: 125 },
+  "Dream Pop": { moods: ["Dreamy", "Ethereal", "Atmospheric"], vocals: ["Breathy Female", "Distant Reverb Vocals"], instruments: ["Electric Guitar", "Pad Synth", "Ambient Textures"], bpm: 100 },
+  "Bedroom Pop": { moods: ["Warm", "Chill", "Tender"], vocals: ["Soft Female Vocals", "Breathy Female"], instruments: ["Acoustic Guitar", "Lo-Fi Drums", "Electric Piano"], bpm: 100 },
+  "Ethereal Pop": { moods: ["Dreamy", "Ethereal", "Romantic"], vocals: ["Angelic Female", "Distant Reverb Vocals"], instruments: ["Pad Synth", "Strings", "Piano"], bpm: 100 },
+  "R&B": { moods: ["Romantic", "Warm", "Groovy"], vocals: ["Smooth Male Vocals", "Soft Female Vocals"], instruments: ["Electric Piano", "Bass Guitar", "Live Drums"], bpm: 85 },
+  "Neo Soul": { moods: ["Warm", "Groovy", "Sentimental"], vocals: ["Smooth Male Vocals", "Breathy Female"], instruments: ["Rhodes", "Bass Guitar", "Live Drums", "Wurlitzer"], bpm: 85 },
+  "Contemporary R&B": { moods: ["Romantic", "Dark", "Atmospheric"], vocals: ["Breathy Female", "Falsetto Male"], instruments: ["808 Bass", "Pad Synth", "Electric Piano"], bpm: 90 },
+  "Funk": { moods: ["Groovy", "Energetic", "Playful"], vocals: ["Powerful Female Vocals", "Deep Male Vocals"], instruments: ["Bass Guitar", "Electric Guitar", "Live Drums", "Organ"], bpm: 110 },
+  "EDM": { moods: ["Euphoric", "Energetic", "Intense"], vocals: ["Powerful Female Vocals", "Auto-tuned Vocals"], instruments: ["Lead Synth", "Sub Bass", "Arpeggiated Synth"], bpm: 128 },
+  "House": { moods: ["Groovy", "Euphoric", "Energetic"], vocals: ["Soft Female Vocals", "Distant Reverb Vocals"], instruments: ["Drum Machine", "Sub Bass", "Pad Synth"], bpm: 124 },
+  "Deep House": { moods: ["Chill", "Groovy", "Atmospheric"], vocals: ["Breathy Female", "Distant Reverb Vocals"], instruments: ["Sub Bass", "Pad Synth", "Rhodes"], bpm: 122 },
+  "Techno": { moods: ["Dark", "Intense", "Hypnotic"], vocals: ["Instrumental (No Vocals)", "Vocoder"], instruments: ["Drum Machine", "Sub Bass", "Analog Synth"], bpm: 130 },
+  "Dubstep": { moods: ["Aggressive", "Dark", "Intense"], vocals: ["Auto-tuned Vocals", "Vocoder"], instruments: ["Wobble Bass", "Sub Bass", "Drum Machine"], bpm: 140 },
+  "Future Bass": { moods: ["Euphoric", "Dreamy", "Bright"], vocals: ["Angelic Female", "Auto-tuned Vocals"], instruments: ["Lead Synth", "Pad Synth", "808 Bass"], bpm: 150 },
+  "Synthwave": { moods: ["Nostalgic", "Energetic", "Mysterious"], vocals: ["Smooth Male Vocals", "Vocoder"], instruments: ["Analog Synth", "Arpeggiated Synth", "Drum Machine"], bpm: 115 },
+  "Chillwave": { moods: ["Dreamy", "Nostalgic", "Chill"], vocals: ["Distant Reverb Vocals", "Breathy Female"], instruments: ["Pad Synth", "Lo-Fi Drums", "Tape Hiss"], bpm: 95 },
+  "Rock": { moods: ["Energetic", "Bold", "Rebellious"], vocals: ["Raspy Male Vocals", "Powerful Female Vocals"], instruments: ["Distorted Guitar", "Live Drums", "Bass Guitar"], bpm: 130 },
+  "Indie Rock": { moods: ["Nostalgic", "Warm", "Bittersweet"], vocals: ["Raspy Male Vocals", "Soft Female Vocals"], instruments: ["Electric Guitar", "Live Drums", "Bass Guitar"], bpm: 120 },
+  "Post Rock": { moods: ["Epic", "Atmospheric", "Cinematic"], vocals: ["Instrumental (No Vocals)", "Distant Reverb Vocals"], instruments: ["Electric Guitar", "Strings", "Live Drums", "Ambient Textures"], bpm: 100 },
+  "Shoegaze": { moods: ["Dreamy", "Atmospheric", "Haunting"], vocals: ["Distant Reverb Vocals", "Breathy Female"], instruments: ["Distorted Guitar", "Pad Synth", "Live Drums"], bpm: 100 },
+  "Heavy Metal": { moods: ["Aggressive", "Fierce", "Dark"], vocals: ["Raspy Male Vocals", "Deep Male Vocals"], instruments: ["Distorted Guitar", "Live Drums", "Bass Guitar"], bpm: 160 },
+  "Acoustic": { moods: ["Warm", "Peaceful", "Tender"], vocals: ["Soft Female Vocals", "Smooth Male Vocals"], instruments: ["Acoustic Guitar", "Piano", "Brushed Drums"], bpm: 90 },
+  "Folk": { moods: ["Warm", "Nostalgic", "Heartfelt"], vocals: ["Smooth Male Vocals", "Soft Female Vocals"], instruments: ["Fingerstyle Guitar", "Acoustic Guitar", "Brushed Drums"], bpm: 100 },
+  "Indie Folk": { moods: ["Tender", "Warm", "Bittersweet"], vocals: ["Breathy Female", "Smooth Male Vocals"], instruments: ["Acoustic Guitar", "Piano", "Strings"], bpm: 95 },
+  "Jazz": { moods: ["Groovy", "Warm", "Mysterious"], vocals: ["Smooth Male Vocals", "Soft Female Vocals"], instruments: ["Piano", "Saxophone", "Brushed Drums", "Bass Guitar"], bpm: 120 },
+  "Smooth Jazz": { moods: ["Calm", "Warm", "Romantic"], vocals: ["Smooth Male Vocals", "Soft Female Vocals"], instruments: ["Saxophone", "Electric Piano", "Bass Guitar"], bpm: 95 },
+  "Blues": { moods: ["Melancholic", "Sentimental", "Warm"], vocals: ["Raspy Male Vocals", "Powerful Female Vocals"], instruments: ["Electric Guitar", "Piano", "Live Drums"], bpm: 80 },
+  "Ambient": { moods: ["Peaceful", "Atmospheric", "Ethereal"], vocals: ["Instrumental (No Vocals)", "Humming"], instruments: ["Pad Synth", "Ambient Textures", "Field Recordings"], bpm: 70 },
+  "Dark Ambient": { moods: ["Eerie", "Mysterious", "Haunting"], vocals: ["Instrumental (No Vocals)", "Distant Reverb Vocals"], instruments: ["Pad Synth", "Ambient Textures", "Sub Bass", "Field Recordings"], bpm: 75 },
+  "Study / Deep Focus": { moods: ["Peaceful", "Calm", "Gentle"], vocals: ["Instrumental (No Vocals)"], instruments: ["Piano", "Ambient Textures", "Pad Synth"], bpm: 100 },
+  "Cinematic Orchestral": { moods: ["Epic", "Cinematic", "Triumphant"], vocals: ["Choir", "Instrumental (No Vocals)"], instruments: ["Orchestral Strings", "Brass Section", "Live Drums", "Piano"], bpm: 90 },
+  "Film Score": { moods: ["Cinematic", "Mysterious", "Epic"], vocals: ["Instrumental (No Vocals)", "Choir"], instruments: ["Strings", "Piano", "Brass Section", "Harp"], bpm: 85 },
+  "Piano Solo": { moods: ["Melancholic", "Peaceful", "Romantic"], vocals: ["Instrumental (No Vocals)"], instruments: ["Piano"], bpm: 80 },
+  "Reggaeton": { moods: ["Energetic", "Groovy", "Playful"], vocals: ["Male Rap", "Powerful Female Vocals"], instruments: ["Drum Machine", "Sub Bass", "Lead Synth"], bpm: 95 },
+  "Afrobeats": { moods: ["Energetic", "Groovy", "Warm"], vocals: ["Smooth Male Vocals", "Powerful Female Vocals"], instruments: ["Live Drums", "Bass Guitar", "Lead Synth"], bpm: 108 },
+  "Reggae": { moods: ["Peaceful", "Warm", "Groovy"], vocals: ["Smooth Male Vocals", "Deep Male Vocals"], instruments: ["Electric Guitar", "Bass Guitar", "Live Drums", "Organ"], bpm: 80 },
+  "Gospel": { moods: ["Uplifting", "Euphoric", "Heartfelt"], vocals: ["Choir", "Powerful Female Vocals"], instruments: ["Piano", "Organ", "Live Drums"], bpm: 100 },
+  "Country": { moods: ["Warm", "Nostalgic", "Heartfelt"], vocals: ["Smooth Male Vocals", "Soft Female Vocals"], instruments: ["Acoustic Guitar", "Slide Guitar", "Fingerstyle Guitar", "Live Drums"], bpm: 110 }
+};
+
+// 장르 기반 추천 가져오기
+function getRecommendations(selectedGenre: string) {
+  return GENRE_RECOMMENDATIONS[selectedGenre] || null;
+}
+
 export default function CreatePage() {
   // 상태 관리
   var [step, setStep] = useState(1);
@@ -91,12 +154,36 @@ export default function CreatePage() {
   var [copied, setCopied] = useState("");
   var [customMood, setCustomMood] = useState("");
 
+  // 장르 선택 시 추천값 자동 세팅
+  function selectGenre(g: string) {
+    setGenre(g);
+    var rec = getRecommendations(g);
+    if (rec) {
+      // 하이브리드/트렌드 모드면 자동 채움, 자유 모드면 비워둠
+      if (mode !== "free") {
+        setSelectedMoods(rec.moods);
+        setSelectedVocal(rec.vocals[0] || "");
+        setBpm(rec.bpm);
+      } else {
+        // 자유 모드에서도 BPM만 추천값으로
+        setBpm(rec.bpm);
+      }
+    }
+  }
+
   // 트렌드 모드에서 자동 세팅
   function applyTrendMode() {
     var top = trendsData.trends[0];
     setGenre(top.genre);
-    setSelectedMoods(top.mood);
-    setBpm(parseInt(top.avgBpm.split("-")[0]) + 5);
+    var rec = getRecommendations(top.genre);
+    if (rec) {
+      setSelectedMoods(rec.moods);
+      setSelectedVocal(rec.vocals[0] || "");
+      setBpm(rec.bpm);
+    } else {
+      setSelectedMoods(top.mood);
+      setBpm(parseInt(top.avgBpm.split("-")[0]) + 5);
+    }
     setMode("trend");
     setStep(2);
   }
@@ -312,7 +399,7 @@ export default function CreatePage() {
                 {(genreCategory ? GENRE_CATEGORIES[genreCategory] : ALL_GENRES).map(function(g) {
                   var isSelected = genre === g;
                   var trend = trendsData.trends.find(function(t) { return t.genre === g; });
-                  return <button key={g} onClick={function() { setGenre(g); }} className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}>{g}{trend ? " +" + trend.growth + "%" : ""}</button>;
+                  return <button key={g} onClick={function() { selectGenre(g); }} className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}>{g}{trend ? " +" + trend.growth + "%" : ""}</button>;
                 })}
               </div>
               {genre && getCurrentTrendInfo() && (
@@ -343,9 +430,23 @@ export default function CreatePage() {
                   })}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {(moodCategory ? MOOD_CATEGORIES[moodCategory] : ALL_MOODS).map(function(m) {
+                  {/* 추천 무드 먼저 */}
+                  {genre && getRecommendations(genre) && !moodCategory && (
+                    <span className="w-full text-[10px] uppercase tracking-widest mb-1" style={{ color: "#8B5CF6" }}>추천</span>
+                  )}
+                  {(moodCategory ? MOOD_CATEGORIES[moodCategory] : (function() {
+                    var rec = genre ? getRecommendations(genre) : null;
+                    if (!rec) return ALL_MOODS;
+                    // 추천 무드를 앞에, 나머지를 뒤에
+                    var recommended = rec.moods.filter(function(m) { return ALL_MOODS.indexOf(m) !== -1; });
+                    var rest = ALL_MOODS.filter(function(m) { return recommended.indexOf(m) === -1; });
+                    return recommended.concat(["__DIVIDER__"]).concat(rest);
+                  })()).map(function(m) {
+                    if (m === "__DIVIDER__") return <span key="div" className="w-full text-[10px] uppercase tracking-widest mt-2 mb-1" style={{ color: "#4A4A5E" }}>기타</span>;
                     var isSelected = selectedMoods.includes(m);
-                    return <button key={m} onClick={function() { toggleMood(m); }} className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}>{m}</button>;
+                    var rec = genre ? getRecommendations(genre) : null;
+                    var isRecommended = rec && rec.moods.indexOf(m) !== -1;
+                    return <button key={m} onClick={function() { toggleMood(m); }} className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")} style={isRecommended && !isSelected ? { borderColor: "rgba(139, 92, 246, 0.3)" } : {}}>{m}</button>;
                   })}
                 </div>
                 <div className="flex gap-2 mt-3">
@@ -371,6 +472,19 @@ export default function CreatePage() {
                   <label className="text-sm font-semibold">보컬 스타일</label>
                   {selectedVocal && <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(52, 211, 153, 0.1)", color: "#34D399" }}>{selectedVocal}</span>}
                 </div>
+                {/* 추천 보컬 먼저 */}
+                {genre && getRecommendations(genre) && (
+                  <div className="mb-3">
+                    <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: "#8B5CF6" }}>이 장르 추천</p>
+                    <div className="flex flex-wrap gap-2">
+                      {getRecommendations(genre)!.vocals.map(function(v) {
+                        var isSelected = selectedVocal === v;
+                        return <button key={v} onClick={function() { setSelectedVocal(isSelected ? "" : v); }} className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")} style={{ borderColor: "rgba(139, 92, 246, 0.3)" }}>{v}</button>;
+                      })}
+                    </div>
+                  </div>
+                )}
+                <p className="text-[10px] uppercase tracking-widest mb-1.5 mt-2" style={{ color: "#4A4A5E" }}>전체</p>
                 {Object.entries(VOCAL_STYLES).map(function([cat, vocals]) {
                   return (
                     <div key={cat} className="mb-3">
@@ -401,6 +515,19 @@ export default function CreatePage() {
                   <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: selectedInstruments.length > 0 ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#1E1E2E", color: selectedInstruments.length > 0 ? "white" : "#7A7A8E" }}>4</div>
                   <label className="text-sm font-semibold">악기 <span style={{ color: "#7A7A8E" }}>(여러 개, 선택 안 하면 자동)</span></label>
                 </div>
+                {/* 추천 악기 먼저 */}
+                {genre && getRecommendations(genre) && (
+                  <div className="mb-3">
+                    <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: "#8B5CF6" }}>이 장르 추천</p>
+                    <div className="flex flex-wrap gap-2">
+                      {getRecommendations(genre)!.instruments.map(function(inst) {
+                        var isSelected = selectedInstruments.includes(inst);
+                        return <button key={inst} onClick={function() { toggleInstrument(inst); }} className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")} style={{ borderColor: "rgba(139, 92, 246, 0.3)" }}>{inst}</button>;
+                      })}
+                    </div>
+                  </div>
+                )}
+                <p className="text-[10px] uppercase tracking-widest mb-1.5 mt-2" style={{ color: "#4A4A5E" }}>전체</p>
                 {Object.entries(INSTRUMENT_CATEGORIES).map(function([cat, instruments]) {
                   return (
                     <div key={cat} className="mb-3">
