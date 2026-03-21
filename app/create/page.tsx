@@ -151,6 +151,7 @@ export default function CreatePage() {
   var [generatedTitle, setGeneratedTitle] = useState("");
   var [generatedTags, setGeneratedTags] = useState("");
   var [isGenerating, setIsGenerating] = useState(false);
+  var [isDemo, setIsDemo] = useState(false);
   var [copied, setCopied] = useState("");
   var [customMood, setCustomMood] = useState("");
 
@@ -206,6 +207,30 @@ export default function CreatePage() {
     }
   }
 
+  // 이전 스텝으로 돌아가기
+  function goBack() {
+    if (step > 1) setStep(step - 1);
+  }
+
+  // 히스토리에 결과 저장
+  function saveToHistory() {
+    var entry = {
+      id: Date.now(),
+      date: new Date().toISOString().split("T")[0],
+      genre: genre,
+      moods: selectedMoods,
+      vocal: selectedVocal,
+      bpm: bpm,
+      prompt: generatedPrompt,
+      lyrics: generatedLyrics,
+      title: generatedTitle,
+      tags: generatedTags
+    };
+    var existing = JSON.parse(localStorage.getItem("r3alson_history") || "[]");
+    existing.unshift(entry);
+    localStorage.setItem("r3alson_history", JSON.stringify(existing.slice(0, 50)));
+  }
+
   // 커스텀 무드 추가
   function addCustomMood() {
     if (customMood.trim() && !selectedMoods.includes(customMood.trim())) {
@@ -238,19 +263,9 @@ export default function CreatePage() {
       setGeneratedLyrics(data.lyrics || "");
       setGeneratedTitle(data.title || "");
       setGeneratedTags(data.tags || "");
+      setIsDemo(false);
     } catch (err) {
-      // API 없을 때 데모 데이터 생성
-      var instStr = selectedInstruments.length > 0 ? selectedInstruments.join(", ").toLowerCase() : "atmospheric pads";
-      var vocalStr = selectedVocal ? ", " + selectedVocal.toLowerCase() : "";
-      var demoPrompt = genre.toLowerCase() + ", " + selectedMoods.join(", ").toLowerCase() + ", " + bpm + " BPM, " + instStr + vocalStr + ", 2:45";
-      setGeneratedPrompt(demoPrompt);
-
-      if (lyricsMode === "ai" || lyricsMode === "hybrid") {
-        setGeneratedLyrics("[Verse 1]\nempty streets below my window\nshadows dancing with the rain\nevery echo tells a story\nof a love I can't explain\n\n[Chorus]\nfade into the hollow night\nwhere the stars forget to shine\nI'll be waiting in the silence\nat the edge of space and time\n\n[Verse 2]\nneon lights through foggy glass\nwhispers carried by the wind\nevery moment feels like falling\nthrough a dream that never ends\n\n[Chorus]\nfade into the hollow night\nwhere the stars forget to shine\nI'll be waiting in the silence\nat the edge of space and time");
-      }
-
-      setGeneratedTitle("Hollow Echo");
-      setGeneratedTags("#" + genre.toLowerCase().replace(/ /g, "") + " #" + selectedMoods[0].toLowerCase() + " #atmospheric #ambient #newmusic #spotify #aimusic");
+      setIsDemo(true);
     }
 
     setIsGenerating(false);
@@ -274,9 +289,13 @@ export default function CreatePage() {
     <div className="flex flex-col min-h-screen">
       {/* 헤더 */}
       <header className="flex items-center px-5 py-5">
-        <Link href="/" className="mr-4 w-10 h-10 flex items-center justify-center rounded-full" style={{ backgroundColor: "#111118", color: "#7A7A8E" }}>
+        <button
+          onClick={function() { if (step > 1) { goBack(); } else { window.location.href = "/"; } }}
+          className="mr-4 w-10 h-10 flex items-center justify-center rounded-full"
+          style={{ backgroundColor: "#111118", color: "#7A7A8E" }}
+        >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        </Link>
+        </button>
         <div className="flex-1">
           <h1 className="text-lg font-bold">새 곡 만들기</h1>
           <div className="flex items-center gap-2 mt-1">
@@ -673,9 +692,14 @@ export default function CreatePage() {
             <div className="text-center mb-4">
               <span className="text-3xl">{"\uD83C\uDF89"}</span>
               <h2 className="text-xl font-bold mt-2">완성!</h2>
-              <p className="text-sm" style={{ color: "#9CA3AF" }}>
+              <p className="text-sm" style={{ color: "#7A7A8E" }}>
                 아래 내용을 수노에 붙여넣으세요
               </p>
+              {isDemo && (
+                <p className="text-xs mt-2 px-3 py-1.5 rounded-full inline-block" style={{ backgroundColor: "rgba(251, 191, 36, 0.1)", color: "#FBBF24" }}>
+                  데모 결과입니다 — Claude API 연동 후 실제 AI가 생성합니다
+                </p>
+              )}
             </div>
 
             {/* 수노 프롬프트 */}
@@ -788,12 +812,29 @@ export default function CreatePage() {
               </ol>
             </div>
 
+            {/* 저장 버튼 */}
+            <button
+              onClick={function() {
+                saveToHistory();
+                setCopied("saved");
+                setTimeout(function() { setCopied(""); }, 2000);
+              }}
+              className="w-full py-3 rounded-xl text-center font-semibold transition-all"
+              style={{
+                backgroundColor: copied === "saved" ? "rgba(52, 211, 153, 0.15)" : "rgba(139, 92, 246, 0.1)",
+                color: copied === "saved" ? "#34D399" : "#8B5CF6",
+                border: "1px solid " + (copied === "saved" ? "rgba(52, 211, 153, 0.3)" : "rgba(139, 92, 246, 0.2)")
+              }}
+            >
+              {copied === "saved" ? "저장 완료!" : "히스토리에 저장"}
+            </button>
+
             {/* 액션 버튼 */}
             <div className="flex gap-3">
               <Link
                 href="/"
-                className="flex-1 py-3 rounded-xl text-center font-semibold border"
-                style={{ borderColor: "#2A2A4A", color: "#9CA3AF" }}
+                className="flex-1 py-3 rounded-xl text-center font-semibold"
+                style={{ backgroundColor: "#111118", color: "#7A7A8E" }}
               >
                 홈으로
               </Link>
@@ -803,13 +844,14 @@ export default function CreatePage() {
                   setMode("");
                   setGenre("");
                   setSelectedMoods([]);
+                  setSelectedVocal("");
+                  setSelectedInstruments([]);
                   setGeneratedPrompt("");
                   setGeneratedLyrics("");
                   setGeneratedTitle("");
                   setGeneratedTags("");
                 }}
-                className="flex-1 py-3 rounded-xl text-center font-semibold text-white"
-                style={{ background: "linear-gradient(to right, #8B5CF6, #EC4899)" }}
+                className="flex-1 py-3 rounded-xl text-center font-semibold text-white glow-btn"
               >
                 새 곡 더 만들기
               </button>

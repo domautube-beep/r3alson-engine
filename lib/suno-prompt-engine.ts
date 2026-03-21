@@ -193,7 +193,9 @@ var VOCAL_PROMPT_MAP: Record<string, string> = {
   "Instrumental (No Vocals)": "instrumental, no vocals"
 };
 
-// ===== 스타일 프롬프트 생성 함수 =====
+// ===== 수노 스타일 프롬프트 생성 (사용자 선택 태그 중심) =====
+// 원칙: 사용자가 선택한 것을 그대로 수노가 파싱할 수 있는 태그로 출력
+// 장르 설명문이 아닌, 선택된 태그의 깔끔한 나열
 export function generateStylePrompt(params: {
   genre: string;
   moods: string[];
@@ -201,31 +203,122 @@ export function generateStylePrompt(params: {
   vocal: string;
   instruments: string[];
 }): string {
-  var genreLower = params.genre.toLowerCase();
-  var moodStr = params.moods.join(", ").toLowerCase();
+  var tags: string[] = [];
 
-  // 장르 기본 스타일
-  var genreStyle = GENRE_STYLE_MAP[genreLower] || params.genre.toLowerCase();
+  // 1. 장르 (사용자 선택 그대로)
+  tags.push(params.genre.toLowerCase());
 
-  // 보컬 프롬프트
-  var vocalPrompt = params.vocal ? (VOCAL_PROMPT_MAP[params.vocal] || params.vocal.toLowerCase()) : "";
+  // 2. 무드 (사용자 선택 그대로)
+  params.moods.forEach(function(m) {
+    tags.push(m.toLowerCase());
+  });
 
-  // 사용자 선택 악기
-  var instStr = params.instruments.length > 0
-    ? params.instruments.join(", ").toLowerCase()
-    : "";
+  // 3. BPM
+  tags.push(params.bpm + " bpm");
 
-  // 프롬프트 조립
-  var parts: string[] = [];
-  parts.push(genreStyle);
-  if (moodStr) parts.push(moodStr);
-  parts.push(params.bpm + " BPM");
-  if (instStr) parts.push(instStr);
-  if (vocalPrompt) parts.push(vocalPrompt);
-  parts.push("2:30-3:00");
+  // 4. 악기 (사용자가 선택했으면 그대로, 안 했으면 장르 기본)
+  if (params.instruments.length > 0) {
+    params.instruments.forEach(function(inst) {
+      tags.push(inst.toLowerCase());
+    });
+  } else {
+    // 장르 기본 악기 (핵심 2-3개만)
+    var defaultInst = GENRE_CORE_INSTRUMENTS[params.genre.toLowerCase()];
+    if (defaultInst) {
+      defaultInst.forEach(function(inst) { tags.push(inst); });
+    }
+  }
 
-  return parts.join(", ");
+  // 5. 보컬 (수노 파싱 가능한 짧은 태그로 변환)
+  if (params.vocal) {
+    var vocalTag = VOCAL_SHORT_TAG[params.vocal];
+    if (vocalTag) {
+      tags.push(vocalTag);
+    } else {
+      tags.push(params.vocal.toLowerCase());
+    }
+  }
+
+  return tags.join(", ");
 }
+
+// 장르별 핵심 악기 (사용자 미선택 시 폴백, 2-3개만)
+var GENRE_CORE_INSTRUMENTS: Record<string, string[]> = {
+  "hip hop": ["boom bap drums", "sampled loops"],
+  "trap": ["808 bass", "trap hi-hats"],
+  "boom bap": ["vinyl samples", "boom bap drums"],
+  "lo-fi hip hop": ["lo-fi drums", "vinyl crackle", "jazz piano"],
+  "cloud rap": ["ethereal pads", "808 bass"],
+  "drill": ["sliding 808s", "aggressive hi-hats"],
+  "phonk": ["memphis samples", "distorted bass"],
+  "emo rap": ["electric guitar", "808 bass"],
+  "pop": ["polished synths", "clean drums"],
+  "indie pop": ["jangly guitars", "warm keys"],
+  "synth pop": ["analog synths", "drum machine"],
+  "k-pop": ["layered synths", "punchy drums"],
+  "dream pop": ["shimmering guitars", "reverb pads"],
+  "bedroom pop": ["soft guitar", "lo-fi drums"],
+  "ethereal pop": ["airy pads", "soft drums"],
+  "r&b": ["smooth keys", "warm bass"],
+  "neo soul": ["rhodes", "live drums"],
+  "contemporary r&b": ["atmospheric pads", "808 bass"],
+  "funk": ["slap bass", "tight drums"],
+  "edm": ["massive synths", "four-on-the-floor kick"],
+  "house": ["four-on-the-floor kick", "filtered loops"],
+  "deep house": ["deep bass", "warm pads"],
+  "techno": ["driving kick", "hypnotic synths"],
+  "trance": ["arpeggiated synths", "euphoric pads"],
+  "dubstep": ["wobble bass", "heavy drops"],
+  "future bass": ["lush chords", "pitched vocals"],
+  "synthwave": ["analog synths", "arpeggios"],
+  "chillwave": ["hazy synths", "lo-fi drums"],
+  "rock": ["distorted guitar", "driving drums"],
+  "indie rock": ["jangly guitar", "live drums"],
+  "post rock": ["ambient guitar layers", "crescendo builds"],
+  "shoegaze": ["wall of guitar", "heavy reverb"],
+  "heavy metal": ["heavy riffs", "double bass drums"],
+  "acoustic": ["acoustic guitar", "soft percussion"],
+  "folk": ["fingerstyle guitar", "harmonica"],
+  "indie folk": ["acoustic guitar", "gentle strings"],
+  "jazz": ["piano", "brushed drums", "upright bass"],
+  "smooth jazz": ["saxophone", "electric piano"],
+  "blues": ["blues guitar", "piano"],
+  "ambient": ["atmospheric pads", "field recordings"],
+  "dark ambient": ["dark drones", "eerie textures"],
+  "study / deep focus": ["minimal piano", "soft ambient"],
+  "cinematic orchestral": ["orchestral strings", "brass", "timpani"],
+  "film score": ["strings", "piano", "brass"],
+  "piano solo": ["solo piano"],
+  "reggaeton": ["dembow rhythm", "latin percussion"],
+  "afrobeats": ["afro drums", "log drum"],
+  "reggae": ["off-beat guitar", "bass heavy groove"],
+  "country": ["steel guitar", "acoustic guitar"],
+  "gospel": ["piano", "organ", "choir"]
+};
+
+// 보컬 → 수노 파싱용 짧은 태그
+var VOCAL_SHORT_TAG: Record<string, string> = {
+  "Deep Male Vocals": "deep male vocal",
+  "Smooth Male Vocals": "smooth male vocal",
+  "Raspy Male Vocals": "raspy male vocal",
+  "Falsetto Male": "male falsetto",
+  "Male Rap": "male rap vocal",
+  "Male Whisper": "whispered male vocal",
+  "Soft Female Vocals": "soft female vocal",
+  "Powerful Female Vocals": "powerful female vocal",
+  "Breathy Female": "breathy female vocal",
+  "Angelic Female": "angelic female vocal",
+  "Female Rap": "female rap vocal",
+  "Female Whisper": "whispered female vocal",
+  "Choir": "choir vocals",
+  "Distant Reverb Vocals": "distant reverb vocal",
+  "Auto-tuned Vocals": "auto-tuned vocal",
+  "Vocoder": "vocoder vocal",
+  "Spoken Word": "spoken word",
+  "Humming": "humming",
+  "Ad-libs Only": "ad-libs only",
+  "Instrumental (No Vocals)": "instrumental"
+};
 
 // ===== Claude API용 프롬프트 빌더 (풀 프로덕션 시트) =====
 export function buildFullSunoPrompt(params: {

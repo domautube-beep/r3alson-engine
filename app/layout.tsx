@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
+import { Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
+
+const notoSansKR = Noto_Sans_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "R3ALSON Engine — AI 음악 히트메이커",
@@ -12,11 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="h-full antialiased dark">
-      <body
-        className="min-h-full flex flex-col bg-[#0A0A0A] text-[#E5E5E5]"
-        style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Pretendard', 'Noto Sans KR', sans-serif" }}
-      >
+    <html lang="ko" className={"h-full antialiased dark " + notoSansKR.className}>
+      <body className="min-h-full flex flex-col bg-[#050508] text-[#F0F0F5]">
         {children}
       </body>
     </html>
