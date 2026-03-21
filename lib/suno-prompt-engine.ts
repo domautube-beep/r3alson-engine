@@ -193,9 +193,8 @@ var VOCAL_PROMPT_MAP: Record<string, string> = {
   "Instrumental (No Vocals)": "instrumental, no vocals"
 };
 
-// ===== 수노 스타일 프롬프트 생성 (사용자 선택 태그 중심) =====
-// 원칙: 사용자가 선택한 것을 그대로 수노가 파싱할 수 있는 태그로 출력
-// 장르 설명문이 아닌, 선택된 태그의 깔끔한 나열
+// ===== 수노 프로덕션 시트 생성 (LIL-PITY 형식) =====
+// 수노가 풍부하게 파싱할 수 있는 프로덕션 디렉션 출력
 export function generateStylePrompt(params: {
   genre: string;
   moods: string[];
@@ -203,43 +202,82 @@ export function generateStylePrompt(params: {
   vocal: string;
   instruments: string[];
 }): string {
-  var tags: string[] = [];
+  var genreLower = params.genre.toLowerCase();
+  var moodStr = params.moods.join(", ").toLowerCase();
 
-  // 1. 장르 (사용자 선택 그대로)
-  tags.push(params.genre.toLowerCase());
+  // 장르 사운드 DNA
+  var genreStyle = GENRE_STYLE_MAP[genreLower] || genreLower;
 
-  // 2. 무드 (사용자 선택 그대로)
-  params.moods.forEach(function(m) {
-    tags.push(m.toLowerCase());
-  });
-
-  // 3. BPM
-  tags.push(params.bpm + " bpm");
-
-  // 4. 악기 (사용자가 선택했으면 그대로, 안 했으면 장르 기본)
+  // 악기
+  var instStr = "";
   if (params.instruments.length > 0) {
-    params.instruments.forEach(function(inst) {
-      tags.push(inst.toLowerCase());
-    });
+    instStr = params.instruments.join(", ").toLowerCase();
   } else {
-    // 장르 기본 악기 (핵심 2-3개만)
-    var defaultInst = GENRE_CORE_INSTRUMENTS[params.genre.toLowerCase()];
-    if (defaultInst) {
-      defaultInst.forEach(function(inst) { tags.push(inst); });
-    }
+    var defaultInst = GENRE_CORE_INSTRUMENTS[genreLower];
+    if (defaultInst) instStr = defaultInst.join(", ");
   }
 
-  // 5. 보컬 (수노 파싱 가능한 짧은 태그로 변환)
+  // 무드 → 텍스처 변환
+  var textureMap: Record<string, string> = {
+    "melancholic": "intimate space, warm low-end, restrained dynamics, soft decay tails",
+    "dark": "low-mid weight, muted highs, tense atmosphere, sparse arrangement",
+    "eerie": "unsettling textures, detuned elements, wide stereo field, tension builds",
+    "chill": "warm compression, soft transients, laid-back groove, gentle sway",
+    "dreamy": "airy reverb, soft tails, floating textures, hazy atmosphere",
+    "aggressive": "hard-hitting transients, distorted edges, compressed dynamics, in-your-face",
+    "epic": "wide stereo, stacked layers, rising dynamics, powerful crescendos",
+    "nostalgic": "vintage warmth, tape saturation, analog character, lo-fi charm",
+    "romantic": "intimate close-mic, warm harmonics, gentle swell, tender dynamics",
+    "energetic": "punchy transients, driving momentum, bright presence, upbeat bounce",
+    "atmospheric": "vast soundscapes, evolving textures, deep reverb, immersive space",
+    "euphoric": "soaring builds, bright synths, uplifting energy, festival peak",
+    "peaceful": "minimal arrangement, soft dynamics, natural space, calming resonance",
+    "groovy": "locked pocket, syncopated feel, head-nod bounce, tight rhythm section",
+    "cinematic": "orchestral width, dynamic sweeps, thematic motifs, dramatic arc",
+    "mysterious": "shadowy textures, sparse reveals, tension and release, enigmatic mood",
+    "haunting": "ghostly reverb, distant echoes, fragile melody, cold atmosphere"
+  };
+
+  var textures: string[] = [];
+  params.moods.forEach(function(m) {
+    var t = textureMap[m.toLowerCase()];
+    if (t) textures.push(t);
+  });
+  var textureStr = textures.length > 0 ? textures[0] : "balanced mix, clear space";
+
+  // 보컬 프롬프트
+  var vocalPrompt = "";
   if (params.vocal) {
-    var vocalTag = VOCAL_SHORT_TAG[params.vocal];
-    if (vocalTag) {
-      tags.push(vocalTag);
-    } else {
-      tags.push(params.vocal.toLowerCase());
-    }
+    vocalPrompt = VOCAL_PROMPT_MAP[params.vocal] || params.vocal.toLowerCase();
   }
 
-  return tags.join(", ");
+  // 다이나믹 플로우 (장르 기반)
+  var dynamicMap: Record<string, string> = {
+    "hip hop": "verse groove lock, chorus lift, bridge strip-back, energy build to final hook",
+    "trap": "sparse intro, verse pocket, explosive hook, bridge half-time drop, final hook stack",
+    "pop": "immediate hook tease, verse build, pre-chorus lift, chorus peak, bridge contrast, final chorus add layers",
+    "r&b": "smooth intro, intimate verse, pre-chorus tension, lush chorus bloom, bridge vulnerability, outro fade",
+    "rock": "guitar intro, driving verse, pre-chorus build, explosive chorus, bridge breakdown, anthem finale",
+    "ambient": "slow evolution, gradual layering, peak density at midpoint, gentle dissolution",
+    "edm": "filtered intro, build tension, drop impact, breakdown, second drop bigger, energy sustain",
+    "jazz": "head statement, verse swing, improvised feel sections, return to head, outro vamp"
+  };
+
+  var dynamicFlow = "";
+  Object.keys(dynamicMap).forEach(function(key) {
+    if (genreLower.indexOf(key) !== -1) dynamicFlow = dynamicMap[key];
+  });
+  if (!dynamicFlow) dynamicFlow = "intro build, verse establish, chorus peak, bridge contrast, finale resolve";
+
+  // 프로덕션 시트 조립
+  var lines: string[] = [];
+  lines.push(genreStyle + ", " + moodStr + ", " + params.bpm + " bpm");
+  lines.push(instStr);
+  lines.push(textureStr);
+  lines.push(dynamicFlow);
+  if (vocalPrompt) lines.push(vocalPrompt);
+
+  return lines.join(", ");
 }
 
 // 장르별 핵심 악기 (사용자 미선택 시 폴백, 2-3개만)
