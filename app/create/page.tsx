@@ -4,16 +4,71 @@ import { useState } from "react";
 import Link from "next/link";
 import trendsData from "@/data/trends.json";
 
-// 무드 옵션 전체 목록
-var MOODS = [
-  "Melancholic", "Chill", "Dreamy", "Eerie", "Peaceful",
-  "Nostalgic", "Cinematic", "Epic", "Romantic", "Energetic",
-  "Dark", "Euphoric", "Mysterious", "Triumphant", "Haunting",
-  "Atmospheric", "Groovy", "Aggressive", "Ethereal", "Warm"
-];
+// ===== 장르 (50+) =====
+var GENRE_CATEGORIES: Record<string, string[]> = {
+  "힙합/랩": ["Hip Hop", "Trap", "Boom Bap", "Lo-Fi Hip Hop", "Cloud Rap", "Drill", "Mumble Rap", "Old School Hip Hop", "Phonk", "Emo Rap"],
+  "팝": ["Pop", "Indie Pop", "Synth Pop", "K-Pop", "Dream Pop", "Electropop", "Art Pop", "Chamber Pop", "Bedroom Pop", "Ethereal Pop"],
+  "R&B/소울": ["R&B", "Neo Soul", "Contemporary R&B", "Smooth R&B", "Alternative R&B", "Soul", "Motown", "Funk"],
+  "일렉트로닉": ["EDM", "House", "Deep House", "Techno", "Trance", "Dubstep", "Drum and Bass", "Future Bass", "Synthwave", "Ambient Electronic", "Chillwave", "Vaporwave"],
+  "록/메탈": ["Rock", "Indie Rock", "Alternative Rock", "Punk Rock", "Post Rock", "Shoegaze", "Grunge", "Heavy Metal", "Progressive Rock", "Psychedelic Rock", "Garage Rock"],
+  "어쿠스틱/포크": ["Acoustic", "Folk", "Indie Folk", "Country", "Bluegrass", "Singer-Songwriter", "Bossa Nova"],
+  "재즈/블루스": ["Jazz", "Smooth Jazz", "Bebop", "Jazz Fusion", "Blues", "Delta Blues", "Jazz Hop"],
+  "앰비언트/뉴에이지": ["Ambient", "Dark Ambient", "Drone", "New Age", "Meditation", "Sleep Music", "Study / Deep Focus", "Nature Sounds"],
+  "클래식/오케스트라": ["Classical", "Cinematic Orchestral", "Film Score", "Piano Solo", "String Quartet", "Opera", "Baroque"],
+  "월드/라틴": ["Reggaeton", "Latin Pop", "Afrobeats", "K-Pop", "J-Pop", "Bossa Nova", "Samba", "Dancehall", "Reggae"],
+  "기타": ["Gospel", "Musical Theater", "Video Game OST", "Lounge", "Chiptune", "Experimental"]
+};
 
-// 장르 목록 (트렌드 데이터에서)
-var GENRES = trendsData.trends.map(function (t) { return t.genre; });
+// 전체 장르 플랫 리스트 (중복 제거)
+var ALL_GENRES: string[] = [];
+Object.values(GENRE_CATEGORIES).forEach(function(genres) {
+  genres.forEach(function(g) {
+    if (ALL_GENRES.indexOf(g) === -1) ALL_GENRES.push(g);
+  });
+});
+
+// ===== 무드 (40+) =====
+var MOOD_CATEGORIES: Record<string, string[]> = {
+  "어두운": ["Melancholic", "Dark", "Eerie", "Haunting", "Mysterious", "Sinister", "Brooding", "Somber", "Tragic"],
+  "밝은": ["Happy", "Euphoric", "Uplifting", "Triumphant", "Cheerful", "Playful", "Bright", "Joyful"],
+  "차분한": ["Chill", "Peaceful", "Calm", "Serene", "Meditative", "Soothing", "Gentle", "Tranquil"],
+  "감성적": ["Romantic", "Nostalgic", "Bittersweet", "Sentimental", "Tender", "Wistful", "Longing", "Heartfelt"],
+  "에너지": ["Energetic", "Aggressive", "Intense", "Powerful", "Fierce", "Bold", "Rebellious", "Wild"],
+  "분위기": ["Dreamy", "Atmospheric", "Ethereal", "Cinematic", "Epic", "Warm", "Groovy", "Psychedelic", "Hypnotic", "Surreal", "Futuristic"]
+};
+
+var ALL_MOODS: string[] = [];
+Object.values(MOOD_CATEGORIES).forEach(function(moods) {
+  moods.forEach(function(m) {
+    if (ALL_MOODS.indexOf(m) === -1) ALL_MOODS.push(m);
+  });
+});
+
+// ===== 보컬 스타일 =====
+var VOCAL_STYLES: Record<string, string[]> = {
+  "남성": ["Deep Male Vocals", "Smooth Male Vocals", "Raspy Male Vocals", "Falsetto Male", "Male Rap", "Male Whisper"],
+  "여성": ["Soft Female Vocals", "Powerful Female Vocals", "Breathy Female", "Angelic Female", "Female Rap", "Female Whisper"],
+  "특수": ["Choir", "Distant Reverb Vocals", "Auto-tuned Vocals", "Vocoder", "Spoken Word", "Humming", "Ad-libs Only"],
+  "없음": ["Instrumental (No Vocals)"]
+};
+
+var ALL_VOCALS: string[] = [];
+Object.values(VOCAL_STYLES).forEach(function(v) {
+  v.forEach(function(s) {
+    if (ALL_VOCALS.indexOf(s) === -1) ALL_VOCALS.push(s);
+  });
+});
+
+// ===== 악기 =====
+var INSTRUMENT_CATEGORIES: Record<string, string[]> = {
+  "건반": ["Piano", "Electric Piano", "Organ", "Synth Pad", "Analog Synth", "Wurlitzer", "Rhodes", "Harpsichord"],
+  "기타": ["Acoustic Guitar", "Electric Guitar", "Fingerstyle Guitar", "Distorted Guitar", "Clean Guitar", "12-String Guitar", "Slide Guitar", "Bass Guitar"],
+  "드럼/비트": ["Drum Machine", "808 Bass", "Trap Hi-Hats", "Lo-Fi Drums", "Live Drums", "Brushed Drums", "Boom Bap Drums", "Breakbeat"],
+  "현악기": ["Strings", "Violin", "Cello", "Orchestral Strings", "Pizzicato", "Harp"],
+  "관악기": ["Trumpet", "Saxophone", "Flute", "French Horn", "Brass Section", "Clarinet"],
+  "신디/전자": ["Arpeggiated Synth", "Pad Synth", "Lead Synth", "Sub Bass", "Wobble Bass", "Glitch", "Vocoder Synth"],
+  "분위기": ["Vinyl Crackle", "Rain Sounds", "Field Recordings", "Ambient Textures", "Tape Hiss", "Wind Chimes", "Music Box", "Bells"]
+};
 
 export default function CreatePage() {
   // 상태 관리
@@ -22,6 +77,10 @@ export default function CreatePage() {
   var [genre, setGenre] = useState("");
   var [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   var [bpm, setBpm] = useState(80);
+  var [selectedVocal, setSelectedVocal] = useState("");
+  var [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
+  var [genreCategory, setGenreCategory] = useState("");
+  var [moodCategory, setMoodCategory] = useState("");
   var [lyricsMode, setLyricsMode] = useState("ai"); // none, ai, manual, hybrid
   var [lyricsTheme, setLyricsTheme] = useState("");
   var [generatedLyrics, setGeneratedLyrics] = useState("");
@@ -51,6 +110,15 @@ export default function CreatePage() {
     }
   }
 
+  // 악기 토글
+  function toggleInstrument(inst: string) {
+    if (selectedInstruments.includes(inst)) {
+      setSelectedInstruments(selectedInstruments.filter(function(x) { return x !== inst; }));
+    } else {
+      setSelectedInstruments(selectedInstruments.concat([inst]));
+    }
+  }
+
   // 커스텀 무드 추가
   function addCustomMood() {
     if (customMood.trim() && !selectedMoods.includes(customMood.trim())) {
@@ -71,6 +139,8 @@ export default function CreatePage() {
           genre: genre,
           moods: selectedMoods,
           bpm: bpm,
+          vocal: selectedVocal,
+          instruments: selectedInstruments,
           lyricsMode: lyricsMode,
           lyricsTheme: lyricsTheme
         })
@@ -83,7 +153,9 @@ export default function CreatePage() {
       setGeneratedTags(data.tags || "");
     } catch (err) {
       // API 없을 때 데모 데이터 생성
-      var demoPrompt = genre.toLowerCase() + ", " + selectedMoods.join(", ").toLowerCase() + ", " + bpm + " BPM, atmospheric pads, distant reverb vocals, cinematic, ethereal, 2:45";
+      var instStr = selectedInstruments.length > 0 ? selectedInstruments.join(", ").toLowerCase() : "atmospheric pads";
+      var vocalStr = selectedVocal ? ", " + selectedVocal.toLowerCase() : "";
+      var demoPrompt = genre.toLowerCase() + ", " + selectedMoods.join(", ").toLowerCase() + ", " + bpm + " BPM, " + instStr + vocalStr + ", 2:45";
       setGeneratedPrompt(demoPrompt);
 
       if (lyricsMode === "ai" || lyricsMode === "hybrid") {
@@ -223,90 +295,157 @@ export default function CreatePage() {
                "자유롭게 선택하세요. 트렌드 데이터는 참고용."}
             </p>
 
-            {/* 장르 선택 */}
+            {/* ── 장르 선택 (카테고리별) ── */}
             <div>
               <label className="text-sm font-semibold block mb-2">장르</label>
-              <select
-                value={genre}
-                onChange={function (e) { setGenre(e.target.value); }}
-                className="select-dark"
-              >
-                <option value="">장르를 선택하세요</option>
-                {GENRES.map(function (g) {
-                  var trend = trendsData.trends.find(function (t) { return t.genre === g; });
-                  var label = g + (trend ? " (" + (trend.growth > 0 ? "+" : "") + trend.growth + "%)" : "");
-                  return <option key={g} value={g}>{label}</option>;
-                })}
-              </select>
-              {genre && getCurrentTrendInfo() && (
-                <p className="text-xs mt-1" style={{ color: getCurrentTrendInfo()!.growth > 0 ? "#10B981" : "#6B7280" }}>
-                  {getCurrentTrendInfo()!.growth > 0
-                    ? "이 장르는 현재 성장 중이에요"
-                    : "트렌드와 다른 선택도 차별화 전략이 될 수 있어요"}
-                </p>
-              )}
-            </div>
-
-            {/* 무드 선택 */}
-            <div>
-              <label className="text-sm font-semibold block mb-2">
-                무드 <span style={{ color: "#9CA3AF" }}>(여러 개 선택 가능)</span>
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {MOODS.map(function (m) {
-                  var isSelected = selectedMoods.includes(m);
+              {/* 카테고리 필터 */}
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                <button
+                  onClick={function() { setGenreCategory(""); }}
+                  className={"px-3 py-1 text-xs rounded-full transition-all " + (!genreCategory ? "mood-chip mood-chip-active" : "mood-chip")}
+                >전체</button>
+                {Object.keys(GENRE_CATEGORIES).map(function(cat) {
                   return (
                     <button
-                      key={m}
-                      onClick={function () { toggleMood(m); }}
+                      key={cat}
+                      onClick={function() { setGenreCategory(cat); }}
+                      className={"px-3 py-1 text-xs rounded-full transition-all " + (genreCategory === cat ? "mood-chip mood-chip-active" : "mood-chip")}
+                    >{cat}</button>
+                  );
+                })}
+              </div>
+              {/* 장르 목록 */}
+              <div className="flex flex-wrap gap-2">
+                {(genreCategory ? GENRE_CATEGORIES[genreCategory] : ALL_GENRES).map(function(g) {
+                  var isSelected = genre === g;
+                  var trend = trendsData.trends.find(function(t) { return t.genre === g; });
+                  return (
+                    <button
+                      key={g}
+                      onClick={function() { setGenre(g); }}
                       className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}
                     >
-                      {m}
+                      {g}{trend ? " +" + trend.growth + "%" : ""}
                     </button>
                   );
                 })}
               </div>
-              {/* 직접 입력 */}
-              <div className="flex gap-2 mt-2">
-                <input
-                  type="text"
-                  value={customMood}
-                  onChange={function (e) { setCustomMood(e.target.value); }}
-                  placeholder="직접 입력"
-                  className="input-dark text-sm"
-                  onKeyDown={function (e) { if (e.key === "Enter") addCustomMood(); }}
-                />
-                <button
-                  onClick={addCustomMood}
-                  className="px-3 py-2 rounded-xl text-sm"
-                  style={{ backgroundColor: "#8B5CF6", color: "white" }}
-                >
-                  추가
-                </button>
-              </div>
+              {genre && getCurrentTrendInfo() && (
+                <p className="text-xs mt-2" style={{ color: getCurrentTrendInfo()!.growth > 0 ? "#34D399" : "#7A7A8E" }}>
+                  {getCurrentTrendInfo()!.growth > 0 ? "이 장르는 현재 성장 중" : "트렌드와 다른 선택도 차별화 전략이 될 수 있어요"}
+                </p>
+              )}
+              {genre && !getCurrentTrendInfo() && (
+                <p className="text-xs mt-2" style={{ color: "#7A7A8E" }}>선택: {genre}</p>
+              )}
             </div>
 
-            {/* BPM */}
+            {/* ── 무드 선택 (카테고리별) ── */}
             <div>
               <label className="text-sm font-semibold block mb-2">
-                BPM: <span style={{ color: "#8B5CF6" }}>{bpm}</span>
+                무드 <span style={{ color: "#7A7A8E" }}>(여러 개 선택 가능)</span>
               </label>
-              <input
-                type="range"
-                min="50"
-                max="180"
-                value={bpm}
-                onChange={function (e) { setBpm(parseInt(e.target.value)); }}
-                className="w-full"
-                style={{ accentColor: "#8B5CF6" }}
-              />
-              <div className="flex justify-between text-xs" style={{ color: "#9CA3AF" }}>
+              {/* 카테고리 필터 */}
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                <button
+                  onClick={function() { setMoodCategory(""); }}
+                  className={"px-3 py-1 text-xs rounded-full transition-all " + (!moodCategory ? "mood-chip mood-chip-active" : "mood-chip")}
+                >전체</button>
+                {Object.keys(MOOD_CATEGORIES).map(function(cat) {
+                  return (
+                    <button
+                      key={cat}
+                      onClick={function() { setMoodCategory(cat); }}
+                      className={"px-3 py-1 text-xs rounded-full transition-all " + (moodCategory === cat ? "mood-chip mood-chip-active" : "mood-chip")}
+                    >{cat}</button>
+                  );
+                })}
+              </div>
+              {/* 무드 목록 */}
+              <div className="flex flex-wrap gap-2">
+                {(moodCategory ? MOOD_CATEGORIES[moodCategory] : ALL_MOODS).map(function(m) {
+                  var isSelected = selectedMoods.includes(m);
+                  return (
+                    <button
+                      key={m}
+                      onClick={function() { toggleMood(m); }}
+                      className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}
+                    >{m}</button>
+                  );
+                })}
+              </div>
+              {/* 직접 입력 */}
+              <div className="flex gap-2 mt-3">
+                <input type="text" value={customMood} onChange={function(e) { setCustomMood(e.target.value); }} placeholder="직접 입력" className="input-dark text-sm" onKeyDown={function(e) { if (e.key === "Enter") addCustomMood(); }} />
+                <button onClick={addCustomMood} className="px-4 py-2 rounded-xl text-sm font-medium" style={{ backgroundColor: "#8B5CF6", color: "white" }}>추가</button>
+              </div>
+              {selectedMoods.length > 0 && (
+                <p className="text-xs mt-2" style={{ color: "#8B5CF6" }}>선택됨: {selectedMoods.join(", ")}</p>
+              )}
+            </div>
+
+            {/* ── 보컬 스타일 ── */}
+            <div>
+              <label className="text-sm font-semibold block mb-2">보컬 스타일</label>
+              {Object.entries(VOCAL_STYLES).map(function([cat, vocals]) {
+                return (
+                  <div key={cat} className="mb-3">
+                    <p className="text-xs mb-1.5" style={{ color: "#7A7A8E" }}>{cat}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {vocals.map(function(v) {
+                        var isSelected = selectedVocal === v;
+                        return (
+                          <button
+                            key={v}
+                            onClick={function() { setSelectedVocal(isSelected ? "" : v); }}
+                            className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}
+                          >{v}</button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ── 악기 선택 (다중) ── */}
+            <div>
+              <label className="text-sm font-semibold block mb-2">
+                악기 <span style={{ color: "#7A7A8E" }}>(여러 개 선택 가능)</span>
+              </label>
+              {Object.entries(INSTRUMENT_CATEGORIES).map(function([cat, instruments]) {
+                return (
+                  <div key={cat} className="mb-3">
+                    <p className="text-xs mb-1.5" style={{ color: "#7A7A8E" }}>{cat}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {instruments.map(function(inst) {
+                        var isSelected = selectedInstruments.includes(inst);
+                        return (
+                          <button
+                            key={inst}
+                            onClick={function() { toggleInstrument(inst); }}
+                            className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}
+                          >{inst}</button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+              {selectedInstruments.length > 0 && (
+                <p className="text-xs mt-1" style={{ color: "#8B5CF6" }}>선택됨: {selectedInstruments.join(", ")}</p>
+              )}
+            </div>
+
+            {/* ── BPM ── */}
+            <div>
+              <label className="text-sm font-semibold block mb-2">
+                BPM: <span className="text-gradient font-bold">{bpm}</span>
+              </label>
+              <input type="range" min="50" max="180" value={bpm} onChange={function(e) { setBpm(parseInt(e.target.value)); }} className="w-full" />
+              <div className="flex justify-between text-xs" style={{ color: "#7A7A8E" }}>
                 <span>50 (느림)</span>
-                <span>
-                  {genre && getCurrentTrendInfo()
-                    ? "이 장르 적정: " + getCurrentTrendInfo()!.avgBpm
-                    : "115 (보통)"}
-                </span>
+                <span>{genre && getCurrentTrendInfo() ? "적정: " + getCurrentTrendInfo()!.avgBpm : "115 (보통)"}</span>
                 <span>180 (빠름)</span>
               </div>
             </div>

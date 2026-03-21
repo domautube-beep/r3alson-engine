@@ -1,31 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // 수노 프롬프트 최적화 엔진
-function optimizePrompt(genre: string, moods: string[], bpm: number): string {
+function optimizePrompt(genre: string, moods: string[], bpm: number, vocal: string, instruments: string[]): string {
   // 7재료 공식: [장르]+[템포]+[무드]+[악기]+[보컬]+[분위기]+[길이]
   var moodStr = moods.join(", ").toLowerCase();
   var genreLower = genre.toLowerCase();
 
-  // 장르별 최적 악기/스타일 매핑
-  var instrumentMap: Record<string, string> = {
+  // 장르별 기본 악기 (사용자가 선택 안 했을 때 폴백)
+  var defaultInstrumentMap: Record<string, string> = {
     "dark ambient": "atmospheric pads, distant reverb, drone bass, field recordings",
     "lo-fi hip hop": "vinyl crackle, jazz piano samples, mellow drum loops, warm bass",
     "ethereal pop": "shimmering synths, reverb vocals, soft drums, ethereal pads",
     "study / deep focus": "minimal piano, soft ambient textures, gentle strings",
     "cinematic orchestral": "full orchestra, strings, brass, epic percussion, choir",
-    "synthwave": "analog synths, arpeggios, gated reverb drums, retro bass"
+    "synthwave": "analog synths, arpeggios, gated reverb drums, retro bass",
+    "trap": "808 bass, trap hi-hats, dark synths, rolling snares",
+    "r&b": "smooth keys, warm bass, soft drums, lush pads",
+    "indie folk": "acoustic guitar, fingerpicking, soft percussion, harmonica",
+    "jazz": "piano, upright bass, brushed drums, saxophone"
   };
 
-  var instruments = instrumentMap[genreLower] || "atmospheric pads, gentle melody";
+  // 사용자 선택 악기 > 기본 악기
+  var instStr = instruments.length > 0
+    ? instruments.join(", ").toLowerCase()
+    : (defaultInstrumentMap[genreLower] || "atmospheric pads, gentle melody");
 
-  // 수노 최적화: 장르를 먼저, 무드를 뒤에, 구체적 디스크립터 사용
-  var parts = [
-    genreLower,
-    moodStr,
-    bpm + " BPM",
-    instruments,
-    "2:45"
-  ];
+  // 보컬 처리
+  var vocalStr = vocal ? vocal.toLowerCase() : "";
+
+  // 수노 최적화: 장르를 먼저, 무드를 뒤에
+  var parts = [genreLower, moodStr, bpm + " BPM", instStr];
+  if (vocalStr) parts.push(vocalStr);
+  parts.push("2:45");
 
   return parts.join(", ");
 }
@@ -136,10 +142,10 @@ function generateDemoTitle(genre: string, moods: string[]): string {
 
 export async function POST(request: NextRequest) {
   var body = await request.json();
-  var { genre, moods, bpm, lyricsMode, lyricsTheme } = body;
+  var { genre, moods, bpm, vocal, instruments, lyricsMode, lyricsTheme } = body;
 
-  // 프롬프트 생성 (수노 최적화)
-  var prompt = optimizePrompt(genre, moods, bpm);
+  // 프롬프트 생성 (수노 최적화 — 보컬/악기 포함)
+  var prompt = optimizePrompt(genre, moods, bpm, vocal || "", instruments || []);
 
   // 가사 생성
   var lyrics = "";
