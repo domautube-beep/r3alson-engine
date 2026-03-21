@@ -1,0 +1,63 @@
+{
+  "updatedAt": "2026-03-22",
+  "trends": [
+    {
+      "genre": "Dark Ambient",
+      "growth": 18,
+      "listeners": "2.1M",
+      "avgBpm": "70-85",
+      "mood": ["Melancholic", "Eerie", "Cinematic"],
+      "tip": "atmospheric pads + distant reverb가 핵심",
+      "difficulty": "쉬움"
+    },
+    {
+      "genre": "Lo-Fi Hip Hop",
+      "growth": 12,
+      "listeners": "8.5M",
+      "avgBpm": "75-90",
+      "mood": ["Chill", "Nostalgic", "Rainy"],
+      "tip": "vinyl crackle + jazz samples 추가하면 품질 UP",
+      "difficulty": "쉬움"
+    },
+    {
+      "genre": "Ethereal Pop",
+      "growth": 9,
+      "listeners": "1.8M",
+      "avgBpm": "90-110",
+      "mood": ["Dreamy", "Atmospheric", "Romantic"],
+      "tip": "reverb vocals + synth pads 조합이 핵심",
+      "difficulty": "보통"
+    },
+    {
+      "genre": "Study / Deep Focus",
+      "growth": 7,
+      "listeners": "15M",
+      "avgBpm": "90-110",
+      "mood": ["Peaceful", "Focused", "Minimal"],
+      "tip": "피아노 단독 or 피아노+앰비언트 조합",
+      "difficulty": "쉬움"
+    },
+    {
+      "genre": "Cinematic Orchestral",
+      "growth": 5,
+      "listeners": "3.2M",
+      "avgBpm": "60-100",
+      "mood": ["Epic", "Dramatic", "Triumphant"],
+      "tip": "strings + brass + percussion 풀 오케스트라",
+      "difficulty": "보통"
+    },
+    {
+      "genre": "Synthwave",
+      "growth": -3,
+      "listeners": "4.1M",
+      "avgBpm": "100-130",
+      "mood": ["Retro", "Neon", "Energetic"],
+      "tip": "80s synths + arpeggios + gated reverb",
+      "difficulty": "보통"
+    }
+  ],
+  "topPromptPatterns": {
+    "formula": "[장르] + [템포] + [무드] + [악기] + [보컬] + [시대] + [레퍼런스]",
+    "example": "dark ambient, 75 BPM, melancholic, atmospheric pads, distant reverb vocals, cinematic, ethereal, 2:45"
+  }
+}
