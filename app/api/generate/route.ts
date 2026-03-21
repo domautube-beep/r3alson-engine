@@ -1,43 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { LYRICS_SYSTEM_PROMPT, filterBannedWords, validateLyrics, buildLyricsPrompt } from "@/lib/lyrics-engine";
-
-// ===== 수노 프롬프트 최적화 엔진 =====
-function optimizePrompt(genre: string, moods: string[], bpm: number, vocal: string, instruments: string[]): string {
-  var moodStr = moods.join(", ").toLowerCase();
-  var genreLower = genre.toLowerCase();
-
-  var defaultInstrumentMap: Record<string, string> = {
-    "dark ambient": "atmospheric pads, distant reverb, drone bass, field recordings",
-    "lo-fi hip hop": "vinyl crackle, jazz piano samples, mellow drum loops, warm bass",
-    "ethereal pop": "shimmering synths, reverb vocals, soft drums, ethereal pads",
-    "study / deep focus": "minimal piano, soft ambient textures, gentle strings",
-    "cinematic orchestral": "full orchestra, strings, brass, epic percussion, choir",
-    "synthwave": "analog synths, arpeggios, gated reverb drums, retro bass",
-    "trap": "808 bass, trap hi-hats, dark synths, rolling snares",
-    "r&b": "smooth keys, warm bass, soft drums, lush pads",
-    "indie folk": "acoustic guitar, fingerpicking, soft percussion, harmonica",
-    "jazz": "piano, upright bass, brushed drums, saxophone",
-    "hip hop": "booming 808s, crisp snares, sampled loops",
-    "pop": "polished synths, clean drums, catchy melody",
-    "rock": "electric guitar, driving drums, bass guitar, power chords",
-    "drill": "sliding 808s, dark pads, aggressive hi-hats",
-    "phonk": "memphis samples, cowbell, distorted bass",
-    "house": "four-on-the-floor kick, synth stabs, filtered vocals",
-    "reggaeton": "dembow rhythm, latin percussion, bass hits"
-  };
-
-  var instStr = instruments.length > 0
-    ? instruments.join(", ").toLowerCase()
-    : (defaultInstrumentMap[genreLower] || "atmospheric pads, gentle melody");
-
-  var vocalStr = vocal ? vocal.toLowerCase() : "";
-
-  var parts = [genreLower, moodStr, bpm + " BPM", instStr];
-  if (vocalStr) parts.push(vocalStr);
-  parts.push("2:45");
-
-  return parts.join(", ");
-}
+import { generateStylePrompt, SUNO_SYSTEM_PROMPT, buildFullSunoPrompt } from "@/lib/suno-prompt-engine";
 
 // ===== 데모 가사 (엔진 규칙 준수) =====
 // DIRECT MODE / Scene Lock / Hook 2회 / () adlib / Show-don't-tell / Line 2-8 syllables
@@ -362,8 +325,14 @@ export async function POST(request: NextRequest) {
   var body = await request.json();
   var { genre, moods, bpm, vocal, instruments, lyricsMode, lyricsTheme } = body;
 
-  // 프롬프트 생성
-  var prompt = optimizePrompt(genre, moods, bpm, vocal || "", instruments || []);
+  // 프롬프트 생성 (Suno Master Architect + LIL-PITY 엔진)
+  var prompt = generateStylePrompt({
+    genre: genre,
+    moods: moods,
+    bpm: bpm,
+    vocal: vocal || "",
+    instruments: instruments || []
+  });
 
   // 가사 생성
   var lyrics = "";
