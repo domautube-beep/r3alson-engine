@@ -217,7 +217,7 @@ export default function CreatePage() {
   }
 
   // 플레이리스트 배리에이션 생성
-  function generatePlaylist() {
+  async function generatePlaylist() {
     setIsGeneratingPlaylist(true);
 
     // 원곡 기반 배리에이션 전략
@@ -300,20 +300,41 @@ export default function CreatePage() {
       var titleSuffixes = ["", " II", " (Night)", " (Dawn)", " (Reprise)", " (Stripped)", " (Deep Cut)", " (Extended)", " (Minimal)", " (Live)"];
       var trackTitle = generatedTitle + titleSuffixes[i % titleSuffixes.length];
 
-      // 프롬프트 조립 (감성 엔진 사용)
-      var trackPromptParts: string[] = [];
-      trackPromptParts.push(genre.toLowerCase());
-      trackPromptParts.push(trackMoods.join(", ").toLowerCase());
-      trackPromptParts.push(trackBpm + " bpm");
-      if (trackInst.length > 0) trackPromptParts.push(trackInst.join(", ").toLowerCase());
-      if (selectedVocal) trackPromptParts.push(selectedVocal.toLowerCase());
+      // 각 트랙별 API 호출로 프롬프트 생성
+      var headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (apiKey) headers["x-api-key"] = apiKey;
 
-      tracks.push({
-        title: trackTitle,
-        prompt: trackPromptParts.join(", "),
-        lyrics: i === 0 ? generatedLyrics : "(원곡 가사를 기반으로 " + v.label + " 버전 작성)",
-        variation: v.label + " — " + v.desc
-      });
+      try {
+        var trackRes = await fetch("/api/generate", {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify({
+            genre: genre,
+            moods: trackMoods,
+            bpm: trackBpm,
+            vocal: selectedVocal,
+            instruments: trackInst,
+            lyricsMode: i === 0 ? "none" : lyricsMode,
+            lyricsTheme: lyricsTheme ? lyricsTheme + " (" + v.label + " version)" : v.label,
+            language: language,
+            sectionLength: sectionLength
+          })
+        });
+        var trackData = await trackRes.json();
+        tracks.push({
+          title: trackTitle,
+          prompt: trackData.prompt || "",
+          lyrics: i === 0 ? generatedLyrics : (trackData.lyrics || "(가사 생성 실패)"),
+          variation: v.label + " — " + v.desc
+        });
+      } catch (err) {
+        tracks.push({
+          title: trackTitle,
+          prompt: genre.toLowerCase() + ", " + trackMoods.join(", ").toLowerCase() + ", " + trackBpm + " bpm",
+          lyrics: i === 0 ? generatedLyrics : "",
+          variation: v.label + " — " + v.desc
+        });
+      }
     }
 
     setPlaylistTracks(tracks);

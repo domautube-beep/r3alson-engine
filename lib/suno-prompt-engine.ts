@@ -282,28 +282,93 @@ export function generateStylePrompt(params: {
 
   var vocalEmotion = params.vocal ? (vocalEmotionMap[params.vocal] || "") : "";
 
-  // 최종 프롬프트 조립 — 감성 서사 형식
-  var promptParts: string[] = [];
+  // ===== LIL-PITY 형식 프로덕션 시트 =====
 
-  // 1. 장르 DNA + BPM
-  promptParts.push(genreStyle);
+  // 다이나믹 플로우
+  var dynamicMap: Record<string, string> = {
+    "hip hop": "verse groove lock → chorus lift → bridge strip-back → final hook energy build",
+    "trap": "sparse filtered intro → verse pocket groove → explosive hook drop → bridge half-time → stacked final hook",
+    "pop": "hook tease intro → verse build → pre-chorus lift → chorus peak explosion → bridge contrast → final chorus with added layers",
+    "r&b": "smooth atmospheric intro → intimate verse → pre-chorus tension swell → lush chorus bloom → vulnerable bridge → fading outro",
+    "rock": "guitar-driven intro → driving verse → pre-chorus build → explosive chorus → breakdown bridge → anthem finale",
+    "ambient": "slow textural evolution → gradual layering → peak density at midpoint → gentle dissolution into silence",
+    "edm": "filtered build intro → rising tension → massive drop impact → stripped breakdown → bigger second drop → sustained energy",
+    "jazz": "head statement → verse swing groove → improvised feel sections → return to head → outro vamp fade",
+    "folk": "fingerpicked intro → storytelling verse → warm chorus swell → intimate bridge → gentle resolve",
+    "classical": "thematic exposition → development and tension → climactic peak → gentle resolution"
+  };
 
-  // 2. 무드 태그 (수노 파싱용)
-  promptParts.push(params.moods.join(", ").toLowerCase());
+  var dynamicFlow = "intro build → verse establish → chorus peak → bridge contrast → finale resolve";
+  Object.keys(dynamicMap).forEach(function(key) {
+    if (genreLower.indexOf(key) !== -1) dynamicFlow = dynamicMap[key];
+  });
 
-  // 3. BPM
-  promptParts.push(params.bpm + " bpm");
+  // 에볼루션
+  var evolutionMap: Record<string, string> = {
+    "hip hop": "verse 1 minimal and spacious → verse 2 denser with ad-libs → bridge stripped to vocal and bass → final hook fully stacked",
+    "trap": "intro dark and sparse → verse adds rolling hi-hats → hook explodes with layered 808s → bridge half-time drop → outro fades with reverb tails",
+    "pop": "verse intimate and close → pre-chorus widens stereo → chorus fully bright and wide → bridge pulls back to piano → final chorus adds choir layers",
+    "r&b": "intro pads only → verse adds rhythm section → chorus blooms with harmonies → bridge raw and exposed → outro dissolves slowly",
+    "rock": "clean intro → verse adds drums → chorus distortion and power → bridge acoustic breakdown → finale full band explosion",
+    "ambient": "single texture → slowly layering → peak complexity → gradual subtraction → return to near-silence"
+  };
 
-  // 4. 악기
-  if (instStr) promptParts.push(instStr);
+  var evolution = "starts minimal → builds through sections → peaks at final chorus → resolves with echo";
+  Object.keys(evolutionMap).forEach(function(key) {
+    if (genreLower.indexOf(key) !== -1) evolution = evolutionMap[key];
+  });
 
-  // 5. 감성 장면 (첫 번째 무드의 감정 묘사)
-  if (emotionScenes.length > 0) promptParts.push(emotionScenes[0]);
+  // 보컬 프롬프트 (물리적 디스크립션)
+  var vocalPhysics = params.vocal ? (VOCAL_PROMPT_MAP[params.vocal] || params.vocal.toLowerCase()) : "";
 
-  // 6. 보컬 감성
-  if (vocalEmotion) promptParts.push(vocalEmotion);
+  // 텍스처
+  var textureMap: Record<string, string> = {
+    "melancholic": "intimate space, warm low-end, restrained dynamics, soft decay tails, close-mic warmth",
+    "dark": "low-mid weight, muted highs, tense atmosphere, sparse arrangement, shadowed depth",
+    "aggressive": "hard-hitting transients, distorted edges, compressed dynamics, in-your-face presence",
+    "chill": "warm compression, soft transients, laid-back groove, gentle sway, wide stereo comfort",
+    "dreamy": "airy reverb, soft tails, floating textures, hazy atmosphere, shimmering delays",
+    "epic": "wide stereo field, stacked layers, rising dynamics, powerful crescendos, orchestral width",
+    "nostalgic": "vintage warmth, tape saturation, analog character, lo-fi charm, worn edges",
+    "romantic": "intimate close-mic, warm harmonics, gentle swell, tender dynamics, breath-close",
+    "energetic": "punchy transients, driving momentum, bright presence, upbeat bounce, crisp highs",
+    "atmospheric": "vast soundscapes, evolving textures, deep reverb, immersive depth, spatial movement",
+    "mysterious": "shadowy textures, sparse reveals, tension and release, enigmatic spaces",
+    "haunting": "ghostly reverb, distant echoes, fragile melody, cold atmosphere, hollow spaces"
+  };
 
-  return promptParts.join(", ");
+  var textureStr = "balanced mix, clear space, dynamic range";
+  params.moods.forEach(function(m) {
+    var t = textureMap[m.toLowerCase()];
+    if (t) textureStr = t;
+  });
+
+  // LIL-PITY 프로덕션 시트 조립
+  var lines: string[] = [];
+
+  // [GLOBAL META]
+  lines.push("[Style_DNA: " + genreStyle + "]");
+  lines.push("[Rhythm: " + params.bpm + " bpm, " + params.moods.join(", ").toLowerCase() + "]");
+  lines.push("[Instruments: " + (instStr || "auto") + "]");
+  lines.push("[Texture: " + textureStr + "]");
+  lines.push("[Dynamic_Flow: " + dynamicFlow + "]");
+  lines.push("[Evolution: " + evolution + "]");
+
+  // 감성 장면 (Forensic Translation)
+  if (emotionScenes.length > 0) {
+    lines.push("[Forensic_Translation: " + emotionScenes.slice(0, 2).join("; ") + "]");
+  }
+
+  // [VOCAL PROFILE]
+  if (vocalPhysics) {
+    lines.push("");
+    lines.push("[VOCAL_PROFILE: " + vocalPhysics + "]");
+    if (vocalEmotion) {
+      lines.push("[PERFORMANCE_TRAITS: " + vocalEmotion + "]");
+    }
+  }
+
+  return lines.join("\n");
 }
 
 // 장르별 핵심 악기 (사용자 미선택 시 폴백, 2-3개만)
