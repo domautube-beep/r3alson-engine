@@ -1,23 +1,48 @@
 @import "tailwindcss";
 
+/* ================================================
+   Apple Human Interface Guidelines 다크 모드 시스템
+   배경: #000000 (Apple Music 기준)
+   Surface: #1C1C1E (그룹 배경)
+   Elevated Surface: #2C2C2E (카드)
+   ================================================ */
+
 :root {
+  /* Apple 시스템 배경 계층 */
+  --bg: #000000;
+  --bg-grouped: #1C1C1E;
+  --surface: #1C1C1E;
+  --surface-elevated: #2C2C2E;
+  --surface-2: #3A3A3C;
+
+  /* Apple 시스템 텍스트 */
+  --text: #FFFFFF;
+  --text-secondary: rgba(235, 235, 245, 0.6);
+  --text-tertiary: rgba(235, 235, 245, 0.3);
+  --text-quaternary: rgba(235, 235, 245, 0.18);
+
+  /* Apple 구분선 */
+  --separator: rgba(84, 84, 88, 0.65);
+  --separator-opaque: #38383A;
+
+  /* Accent — 단일 tint color */
   --primary: #8B5CF6;
-  --secondary: #EC4899;
-  --bg: #050508;
-  /* surface: 배경(#050508)보다 확실히 밝게 올려서 카드가 떠 보이도록 */
-  --surface: #161622;
-  --surface-2: #1E1E30;
-  --text: #F0F0F5;
-  /* text-secondary: #7A7A8E → #A0A0B8로 밝게 (대비비 약 5.5:1) */
-  --text-secondary: #A0A0B8;
-  /* text-tertiary: #4A4A5E → #6E6E88로 밝게 (대비비 약 4.6:1) */
-  --text-tertiary: #6E6E88;
-  --success: #34D399;
-  --warning: #FBBF24;
-  --error: #F87171;
-  /* border: #1E1E2E → #2A2A3E로 밝게 — 구분선이 보여야 함 */
-  --border: #2A2A3E;
-  --glow: rgba(139, 92, 246, 0.15);
+  --primary-muted: rgba(139, 92, 246, 0.2);
+
+  /* 시스템 컬러 */
+  --success: #30D158;
+  --warning: #FF9F0A;
+  --error: #FF453A;
+
+  /* fill 레이어 (iOS Fill Colors) */
+  --fill-primary: rgba(120, 120, 128, 0.36);
+  --fill-secondary: rgba(120, 120, 128, 0.32);
+  --fill-tertiary: rgba(118, 118, 128, 0.24);
+  --fill-quaternary: rgba(116, 116, 128, 0.18);
+
+  /* 레거시 — 기존 코드 호환성 */
+  --text-secondary-hex: #98989D;
+  --border: #38383A;
 }
 
 * {
@@ -27,154 +52,149 @@
 body {
   background: var(--bg);
   color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Noto Sans KR', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 글래스 카드 — 솔리드하게 변경: 투명도 줄이고 배경과 확실히 분리 */
+/* ================================================
+   Apple 카드 — 그림자 없음, 솔리드 배경, 16px 반경
+   ================================================ */
 .glass-card {
-  background: #161622;
-  border: 1px solid #2A2A3E;
-  border-radius: 20px;
-  transition: border-color 150ms ease-out, background 150ms ease-out;
+  background: var(--surface-elevated);
+  border-radius: 16px;
+  transition: background 150ms ease-out;
 }
 
 .glass-card:hover {
-  border-color: rgba(139, 92, 246, 0.35);
-  background: #1A1A2A;
+  background: #3A3A3C;
 }
 
-/* 글로우 버튼 — 애니메이션 절제, 호버 시 단일 트랜지션 */
+/* ================================================
+   Apple 리스트 아이템 — 구분선 좌측 패딩에만
+   ================================================ */
+.apple-list-item {
+  background: var(--surface-elevated);
+  padding: 12px 16px;
+  transition: background 150ms ease-out;
+}
+
+.apple-list-item:active {
+  background: var(--fill-tertiary);
+}
+
+/* 리스트 구분선 — 왼쪽 16px 들여쓴 Apple 스타일 */
+.apple-list-separator {
+  height: 0.5px;
+  background: var(--separator);
+  margin-left: 16px;
+}
+
+/* ================================================
+   Apple CTA 버튼 — filled, tint color
+   ================================================ */
 .glow-btn {
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
-  box-shadow: 0 4px 24px rgba(139, 92, 246, 0.35);
-  transition: box-shadow 250ms ease-out, transform 250ms ease-out, opacity 150ms ease-out;
+  background: var(--primary);
+  color: #FFFFFF;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  transition: opacity 150ms ease-out, transform 100ms ease-out;
 }
 
 .glow-btn:hover {
-  box-shadow: 0 6px 32px rgba(139, 92, 246, 0.5);
-  transform: translateY(-1px);
+  opacity: 0.88;
 }
 
 .glow-btn:active {
-  transform: translateY(0px);
-  opacity: 0.9;
+  opacity: 0.76;
+  transform: scale(0.98);
 }
 
-/* 트렌드 바 애니메이션 */
-.trend-bar {
-  animation: bar-grow 0.8s ease-out forwards;
-  transform-origin: left;
-}
-
-@keyframes bar-grow {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
-}
-
-/* 페이드 인 */
-.fade-in {
-  animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* 스태거 애니메이션 */
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.1s; }
-.stagger-3 { animation-delay: 0.15s; }
-.stagger-4 { animation-delay: 0.2s; }
-.stagger-5 { animation-delay: 0.25s; }
-
-/* AI 상태 펄스 */
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* 태그 칩 — 배경 밝기 올리고 텍스트 대비 강화 */
+/* ================================================
+   Apple 태그 칩 — fill 스타일
+   ================================================ */
 .mood-chip {
-  background: rgba(139, 92, 246, 0.12);
-  border: 1px solid rgba(139, 92, 246, 0.25);
-  color: #B8A4FB;
-  padding: 6px 12px;
+  background: var(--fill-tertiary);
+  color: var(--text-secondary);
+  padding: 5px 12px;
   border-radius: 99px;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.2px;
-  /* 최소 터치 높이 44px 확보 (패딩으로 보완) */
-  min-height: 32px;
+  font-size: 13px;
+  font-weight: 400;
+  min-height: 28px;
   display: inline-flex;
   align-items: center;
-  transition: background 150ms ease-out, border-color 150ms ease-out;
+  transition: background 150ms ease-out;
+  border: none;
 }
 
 .mood-chip:hover {
-  background: rgba(139, 92, 246, 0.18);
-  border-color: rgba(139, 92, 246, 0.4);
+  background: var(--fill-secondary);
 }
 
 .mood-chip-active {
-  background: rgba(139, 92, 246, 0.22);
-  border-color: #8B5CF6;
-  color: #D4C8FF;
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+  background: #8B5CF6;
+  color: #FFFFFF;
+  font-weight: 600;
 }
 
-/* 인풋 스타일 — 배경을 #161622로 올려 배경(#050508)과 확실히 구분 */
+/* ================================================
+   Apple 인풋 — 구분선 스타일 (테두리 없음)
+   ================================================ */
 .input-dark {
-  background: #1A1A28;
-  border: 1px solid #2A2A3E;
+  background: var(--surface-elevated);
+  border: none;
   border-radius: 12px;
   color: var(--text);
   padding: 14px 16px;
-  font-size: 15px;
-  transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+  font-size: 17px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  transition: background 150ms ease-out;
   width: 100%;
-  /* 최소 터치 높이 44px */
   min-height: 44px;
+  -webkit-appearance: none;
 }
 
 .input-dark:focus {
   outline: none;
-  border-color: #8B5CF6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+  background: #3A3A3C;
 }
 
-/* placeholder: #4A4A5E → #6E6E88로 밝게 */
 .input-dark::placeholder {
-  color: #6E6E88;
+  color: var(--text-tertiary);
 }
 
-/* 셀렉트 — input-dark와 동일한 배경으로 통일 */
+/* ================================================
+   Apple 셀렉트
+   ================================================ */
 .select-dark {
   appearance: none;
-  background: #1A1A28 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A0A0B8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center;
+  -webkit-appearance: none;
+  background: var(--surface-elevated) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2398989D' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center;
   background-size: 12px;
-  border: 1px solid #2A2A3E;
+  border: none;
   border-radius: 12px;
   color: var(--text);
   padding: 14px 40px 14px 16px;
-  font-size: 15px;
+  font-size: 17px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
   width: 100%;
   min-height: 44px;
-  transition: border-color 150ms ease-out;
+  transition: background 150ms ease-out;
 }
 
 .select-dark:focus {
   outline: none;
-  border-color: #8B5CF6;
+  background-color: #3A3A3C;
 }
 
-/* 레인지 슬라이더 */
+/* ================================================
+   Apple 레인지 슬라이더 — 단색 accent
+   ================================================ */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
-  background: var(--border);
+  background: var(--fill-primary);
   border-radius: 2px;
   outline: none;
 }
@@ -182,44 +202,129 @@ input[type="range"] {
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #8B5CF6, #EC4899);
+  background: #FFFFFF;
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* 스크롤바 */
-::-webkit-scrollbar { width: 4px; }
+/* ================================================
+   Apple 텍스트 스타일 시스템
+   Large Title: 34px/700
+   Title 1: 28px/700
+   Title 2: 22px/700
+   Title 3: 20px/600
+   Headline: 17px/600
+   Body: 17px/400
+   Callout: 16px/400
+   Subhead: 15px/400
+   Footnote: 13px/400
+   Caption: 12px/400
+   ================================================ */
+.text-large-title { font-size: 34px; font-weight: 700; line-height: 1.18; letter-spacing: 0.37px; }
+.text-title-1 { font-size: 28px; font-weight: 700; line-height: 1.21; letter-spacing: 0.36px; }
+.text-title-2 { font-size: 22px; font-weight: 700; line-height: 1.28; letter-spacing: 0.35px; }
+.text-title-3 { font-size: 20px; font-weight: 600; line-height: 1.3; letter-spacing: 0.38px; }
+.text-headline { font-size: 17px; font-weight: 600; line-height: 1.29; letter-spacing: -0.41px; }
+.text-body { font-size: 17px; font-weight: 400; line-height: 1.53; letter-spacing: -0.41px; }
+.text-callout { font-size: 16px; font-weight: 400; line-height: 1.5; letter-spacing: -0.32px; }
+.text-subhead { font-size: 15px; font-weight: 400; line-height: 1.47; letter-spacing: -0.24px; }
+.text-footnote { font-size: 13px; font-weight: 400; line-height: 1.38; letter-spacing: -0.08px; }
+.text-caption-1 { font-size: 12px; font-weight: 400; line-height: 1.33; letter-spacing: 0px; }
+.text-caption-2 { font-size: 11px; font-weight: 400; line-height: 1.18; letter-spacing: 0.07px; }
+
+/* ================================================
+   Apple 트랜지션 — 스프링 감각
+   ================================================ */
+.fade-in {
+  animation: appleSlideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes appleSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 스태거 딜레이 */
+.stagger-1 { animation-delay: 0.04s; }
+.stagger-2 { animation-delay: 0.08s; }
+.stagger-3 { animation-delay: 0.12s; }
+.stagger-4 { animation-delay: 0.16s; }
+.stagger-5 { animation-delay: 0.20s; }
+
+/* ================================================
+   Apple 트렌드 바 — 단색 accent
+   ================================================ */
+.trend-bar {
+  animation: barGrow 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform-origin: left;
+}
+
+@keyframes barGrow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* ================================================
+   AI 상태 펄스 (절제된)
+   ================================================ */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+/* ================================================
+   Apple 스크롤바 — 거의 보이지 않게
+   ================================================ */
+::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-/* 스크롤바 색상도 border 색상과 맞춰 밝게 */
-::-webkit-scrollbar-thumb { background: #2A2A3E; border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgba(84, 84, 88, 0.4); border-radius: 2px; }
 
-::selection { background: rgba(139, 92, 246, 0.3); }
+/* ================================================
+   선택 하이라이트 — accent 색
+   ================================================ */
+::selection { background: rgba(139, 92, 246, 0.25); }
 
-/* 텍스트 그래디언트 */
-.text-gradient {
-  background: linear-gradient(135deg, #8B5CF6, #EC4899);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* ================================================
+   Apple 배지/라벨
+   ================================================ */
+.apple-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
 }
 
-/* 배경 글로우 */
+/* ================================================
+   Apple 섹션 헤더 (Inset Grouped 스타일)
+   ================================================ */
+.section-header {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0 16px;
+  margin-bottom: 8px;
+}
+
+/* ================================================
+   기존 text-gradient — 단색으로 교체
+   Apple은 그라데이션 텍스트를 거의 쓰지 않음
+   ================================================ */
+.text-gradient {
+  color: #A78BFA;
+}
+
+/* ================================================
+   배경 글로우 — 완전 제거 (Apple HIG 위반)
+   bg-glow는 유지하되 효과 없애기
+   ================================================ */
 .bg-glow {
   position: relative;
 }
-
-.bg-glow::before {
-  content: '';
-  position: absolute;
-  top: -100px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
+/* bg-glow::before 제거 — Apple HIG는 배경 발광 금지 */
