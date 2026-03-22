@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useApiKey } from "@/lib/api-key-context";
+import { BottomNav } from "@/components/bottom-nav";
 
 export default function SettingsPage() {
   var { apiKey, setApiKey, isKeySet, ownerPassword, setOwnerPassword, isOwnerMode, rememberSession, setRememberSession, clearKey } = useApiKey();
@@ -270,21 +271,7 @@ export default function SettingsPage() {
         </section>
       </main>
 
-      {/* 하단 탭바 */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around py-3" style={{ backgroundColor: "rgba(5, 5, 8, 0.9)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderTop: "1px solid rgba(30, 30, 46, 0.5)" }}>
-        <Link href="/" className="flex flex-col items-center gap-0.5" style={{ color: "#4A4A5E" }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h1v7c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7h1a1 1 0 00.7-1.7l-9-9a1 1 0 00-1.4 0l-9 9A1 1 0 003 13z"/></svg>
-          <span className="text-[10px] font-medium">트렌드</span>
-        </Link>
-        <Link href="/history" className="flex flex-col items-center gap-0.5" style={{ color: "#4A4A5E" }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 7h8M8 12h8M8 17h4"/></svg>
-          <span className="text-[10px] font-medium">히스토리</span>
-        </Link>
-        <Link href="/settings" className="flex flex-col items-center gap-0.5" style={{ color: "#8B5CF6" }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-          <span className="text-[10px] font-medium">설정</span>
-        </Link>
-      </nav>
+      <BottomNav />
     </div>
   );
 }

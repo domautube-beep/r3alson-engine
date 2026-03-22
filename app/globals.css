@@ -91,6 +91,12 @@ body {
 .stagger-4 { animation-delay: 0.2s; }
 .stagger-5 { animation-delay: 0.25s; }
 
+/* AI 상태 펄스 */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 /* 태그 칩 */
 .mood-chip {
   background: rgba(139, 92, 246, 0.08);
