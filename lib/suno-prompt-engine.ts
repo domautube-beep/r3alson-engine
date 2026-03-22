@@ -1,85 +1,73 @@
 // R3ALSON Suno Prompt Engine
 // Based on: Suno Master Architect v3.0 + LIL-PITY Suno v5 Prompt OS v1.3
 
-// ===== Claude API용 수노 프롬프트 생성 시스템 프롬프트 =====
+// ===== Suno Master Architect v3.0 — Claude API용 시스템 프롬프트 =====
 export var SUNO_SYSTEM_PROMPT = [
   "You are a Suno music prompt architect.",
-  "Your function is to transform any user input into a final Suno-ready result.",
+  "Your function is to transform any user input into a final Suno-ready result that can be copied and pasted immediately.",
   "",
-  "Your output ALWAYS consists of exactly three blocks in strict order:",
-  "1) [GLOBAL META]",
-  "2) [VOCAL PROFILE]",
-  "3) [LYRICS]",
+  "User input may be short, vague, emotional, fragmented, or reference-heavy.",
+  "Your role is to interpret it with musical intelligence and translate it into a clean, structured, original prompt for Suno.",
   "",
-  "All commands inside brackets MUST be English-only.",
-  "Lyrics must ALWAYS remain outside brackets.",
-  "No commentary. No extra words.",
-  "Never include artist/producer/brand names.",
+  "Music is built through playable elements.",
+  "Focus on genre, vocal texture, era, rhythm feel, arrangement density, hook behavior, and emotional temperature expressed as sound.",
+  "When the request suggests a group, think in layered voices, contrast, unison, call-and-response, and stacked hooks.",
+  "When the request suggests a solo act, think in one centered vocal identity with clear tonal behavior.",
   "",
-  "--- [GLOBAL META] (max 900 chars) ---",
-  "MANDATORY FIELDS in this order:",
-  "[Era_Lock: (year/era range, arrangement grammar, mix tendencies)]",
-  "[Style_DNA: (genre characteristics as tags ONLY)]",
-  "[Rhythm: (tempo, pocket, swing, subdivision, bounce, groove)]",
-  "[Instruments: (instrument palette + arrangement direction)]",
-  "[Texture: (sonic texture, density, contrast, grit/clean, width)]",
-  "[Dynamic_Flow: (energy curve + section-to-section motion)]",
-  "[Evolution: (how the track transforms across sections)]",
-  "[Forensic_Translation: (input taste to safe physical tags summary)]",
+  "The result should feel immediately usable in Suno.",
+  "Write with compact, high-value musical language.",
+  "Favor direct sonic descriptions over abstract praise.",
+  "Shape every answer as a finished result rather than a discussion.",
   "",
-  "--- [VOCAL PROFILE] ---",
-  "[VOCAL_PROFILE: ...]",
-  "[VOICE_TYPE: ...]",
-  "[TIMBRE: ...]",
-  "[ARTICULATION: ...]",
-  "[VIBRATO: ...]",
-  "[DELIVERY: ...]",
-  "[REVERB: ...]",
-  "[PERFORMANCE_TRAITS: ...]",
-  "[Evolution: ...]",
+  "Interpretation Framework:",
+  "1. What is the user asking for: style prompt, lyrics, or both",
+  "2. Is the vocal identity solo or group",
+  "3. What era logic best fits the request",
+  "4. What genre engine drives the sound",
+  "5. What vocal textures define the topline",
+  "6. What rhythm and energy shape the track",
+  "7. What hook form will make it memorable",
+  "8. Which arrangement details matter most",
   "",
-  "Vocal Design dimensions:",
+  "Vocal Design — describe through physical musical qualities:",
   "bright/dark/neutral, clean/airy/breathy/husky/grainy/silky,",
   "soft/restrained/projected/aggressive, low-mid/mid/high-mid/top-heavy,",
   "crisp/rounded/slurred/percussive, intimate/yearning/euphoric/icy/tender/urgent/defiant",
   "",
-  "--- [LYRICS] ---",
-  "Song form: Verse 1 > Hook > Chorus > Verse 2 > Bridge > Hook > Chorus > Outro",
+  "Era Physics:",
+  "Early-era: clear melodic phrasing, classic build, stronger pre-chorus lift, fuller bridge function",
+  "Mid-era: larger hooks, polished layering, strong section contrast, rap-vocal switching",
+  "Late-2010s: tighter transitions, repeated hook compression, hybrid pop-trap, sharper rhythm",
+  "2020s: faster payoff, shorter sections, stronger texture contrast, hook-first, immediate topline",
   "",
-  "Per-section (English-only inside brackets):",
-  "[SECTION: ___]",
-  "[VOCAL_PROMPT: tone/projection/breath/articulation/arc]",
-  "[LAYER: layering + variation plan]",
-  "[Texture: texture-change plan]",
-  "Then lyrics OUTSIDE brackets.",
-  "",
-  "--- AUTO-HOOK ENGINE ---",
-  "Repetition Mandate: 1-3 anchor phrases that repeat",
-  "Antithesis & Mirroring: opposing ideas or mirrored structures",
-  "Internal Rhyme Chains: continuous vowel/consonant flow",
-  "Hook Length: English 4-8 syllables, Korean 4-10 syllables",
-  "Parenthetical Rhythm: () as rhythmic markers (pauses/echo/timing)",
-  "Bounce Architecture: short/medium/short/extended pattern",
-  "Memory Loop: final hook line recalls first hook line",
-  "",
-  "--- ARRANGEMENT PHYSICS ---",
-  "Use sound-generating language:",
-  "tight kick, punchy snare, sub-heavy bassline, filtered intro,",
-  "sparse verse, explosive chorus, syncopated hi-hats, rolling percussion,",
-  "rising tom fills, wide synth pad, muted guitar plucks, stacked harmonies,",
-  "pulsing arpeggio, glossy synth lead, dry verse vocal, wider stereo chorus,",
+  "Arrangement Physics — use sound-generating language:",
+  "tight kick, punchy snare, sub-heavy bassline, filtered intro, sparse verse, explosive chorus,",
+  "syncopated hi-hats, rolling percussion, rising tom fills, wide synth pad, muted guitar plucks,",
+  "stacked harmonies, pulsing arpeggio, glossy synth lead, dry verse vocal, wider stereo chorus,",
   "minimal groove pocket, warm pads, distorted bass pressure, intimate reverb tail",
   "",
+  "Translate emotional words into sound:",
   "Dreamy = airy pads, soft tails, breathy vocal",
   "Dark = low-mid weight, muted highs, tense pads",
   "Epic = wide drums, stacked chorus, rising fills",
   "Emotional = intimate lead, dynamic lift, fuller harmonic spread",
   "",
-  "--- ERA PHYSICS ---",
-  "Early-era: clear melodic phrasing, classic build, stronger pre-chorus, fuller bridge",
-  "Mid-era: larger hooks, polished layering, rap-vocal switching",
-  "Late-2010s: tighter transitions, repeated hook compression, hybrid pop-trap",
-  "2020s: faster payoff, shorter sections, stronger texture contrast, hook-first"
+  "Hook Design: the hook should feel identifiable on first listen.",
+  "It can be melodic, rhythmic, chant-based, slogan-like, or texture-led.",
+  "Choose the form that best matches the era and genre.",
+  "",
+  "Suno section tags: [Intro] [Verse] [Pre-Chorus] [Chorus] [Post-Chorus] [Bridge] [Breakdown] [Drop] [Final Chorus] [Outro]",
+  "Performance tags: [Whisper] [Falsetto] [Rap] [Harmony] [Double Vocal] [Half-Time] [Beat Drop]",
+  "Parentheses for interjections: (Yeah) (Ooh) (Hey) (One more time) (Na-na)",
+  "",
+  "Output: one complete Suno-ready result.",
+  "Style prompt when asked for style. Lyrics when asked for lyrics. Both when asked for both.",
+  "No commentary. No explanation. Only the finished Suno-usable result.",
+  "",
+  "Decision Priority: Safety → Format → Solo/Group → Era → Genre → Vocal → Hook → Arrangement → Rhythm → Compression",
+  "",
+  "Quality Standard: clear, musical, compact, original, structurally aware, copy-paste ready for Suno.",
+  "Never include artist/producer/brand names."
 ].join("\n");
 
 // ===== 장르별 기본 스타일 프롬프트 매핑 =====
@@ -343,29 +331,188 @@ export function generateStylePrompt(params: {
     if (t) textureStr = t;
   });
 
-  // LIL-PITY 프로덕션 시트 조립
+  // ===== Era Lock — 시대별 프로덕션 로직 =====
+  var eraMap: Record<string, string> = {
+    "boom bap": "90s, classic sample-based arrangement, warm analog mix, vinyl-era mastering",
+    "lo-fi hip hop": "late-2010s, bedroom production grammar, lo-fi tape warmth, compressed intimacy",
+    "trap": "2010s-2020s, 808-driven arrangement, hard-panned hats, modern trap mix",
+    "drill": "2020s, UK/Chicago drill grammar, sliding bass, aggressive modern mix",
+    "phonk": "late-2010s, memphis revival grammar, distorted lo-fi mix, aggressive compression",
+    "cloud rap": "2010s, spacious reverb-heavy grammar, ethereal mix, minimal density",
+    "emo rap": "late-2010s, guitar-trap hybrid grammar, emotional rawness, lo-fi edge",
+    "pop": "2020s, polished modern pop grammar, hook-first, immediate topline identity",
+    "synth pop": "80s-inspired, analog synth grammar, gated reverb, retro-modern sheen",
+    "k-pop": "2020s, dense layered arrangement, rapid section changes, polished K-pop mix",
+    "dream pop": "late-80s to 2020s, reverb-soaked guitar grammar, hazy ethereal mix",
+    "indie pop": "2010s, organic warmth grammar, lo-fi charm, intimate recording",
+    "bedroom pop": "late-2010s, bedroom intimacy grammar, soft recording, personal feel",
+    "ethereal pop": "2020s, airy atmospheric grammar, floaty mix, shimmering textures",
+    "r&b": "2020s, modern R&B grammar, intimate vocal-forward mix, smooth groove",
+    "neo soul": "late-90s to 2000s, organic live-feel grammar, vintage warmth, jazzy mix",
+    "contemporary r&b": "2020s, trap-influenced R&B grammar, atmospheric modern mix",
+    "funk": "70s-inspired, tight rhythm section grammar, punchy analog mix, groovy warmth",
+    "edm": "2020s, festival-ready grammar, massive sidechain compression, powerful drops",
+    "house": "2020s, four-on-the-floor grammar, filtered groove mix, club-ready master",
+    "deep house": "2010s, minimal deep grammar, warm bass-forward mix, late-night feel",
+    "techno": "2020s, hypnotic repetition grammar, industrial mix tendencies, dark pulse",
+    "trance": "2000s-2020s, euphoric build grammar, soaring pad mix, epic energy",
+    "synthwave": "80s retro, analog synth grammar, gated reverb drums, retro mastering",
+    "future bass": "late-2010s, lush chord grammar, pitched vocal chop mix, colorful energy",
+    "rock": "2020s, guitar-driven grammar, dynamic range, powerful mix",
+    "indie rock": "2010s, organic guitar grammar, lo-fi edge, authentic mix",
+    "post rock": "2000s-2020s, crescendo-build grammar, ambient guitar layers, cinematic mix",
+    "shoegaze": "early-90s, wall-of-sound grammar, heavy reverb, distorted haze",
+    "punk rock": "fast aggressive grammar, raw recording, minimal polish, energy-first mix",
+    "heavy metal": "2020s, heavy riff grammar, compressed powerful mix, aggressive master",
+    "acoustic": "timeless, natural room grammar, organic recording, minimal processing",
+    "folk": "timeless, storytelling grammar, warm organic mix, traditional feel",
+    "indie folk": "2010s, intimate acoustic grammar, pastoral warmth, gentle mix",
+    "jazz": "timeless, live improvised-feel grammar, natural dynamic mix, acoustic warmth",
+    "smooth jazz": "90s-2000s, polished groove grammar, easy listening mix, clean master",
+    "blues": "timeless, 12-bar emotion grammar, raw recording, authentic mix",
+    "ambient": "2020s, evolving texture grammar, deep spatial mix, immersive master",
+    "dark ambient": "2020s, ominous drone grammar, deep sub-frequency mix, unsettling space",
+    "study / deep focus": "2020s, minimal distraction grammar, gentle pulse mix, background-ready",
+    "cinematic orchestral": "2020s, epic orchestral grammar, wide dynamic mix, film-score master",
+    "piano solo": "timeless, expressive dynamic grammar, intimate space, pedal resonance",
+    "reggaeton": "2020s, dembow-driven grammar, bass-heavy Latin mix, danceable master",
+    "afrobeats": "2020s, polyrhythmic grammar, warm percussive mix, afro groove"
+  };
+
+  var eraLock = "2020s, modern production grammar, balanced contemporary mix";
+  Object.keys(eraMap).forEach(function(key) {
+    if (genreLower.indexOf(key) !== -1 || genreLower === key) eraLock = eraMap[key];
+  });
+
+  // ===== Rhythm & Energy — 리듬 모션 묘사 =====
+  var rhythmEnergyMap: Record<string, string> = {
+    "hip hop": "mid-tempo glide, head-nod pocket, syncopated swing",
+    "trap": "half-time weight, rolling hi-hat subdivisions, 808 bounce",
+    "boom bap": "mid-tempo swing, boom-bap pocket, classic head-nod groove",
+    "lo-fi hip hop": "slow burn groove, lazy swing, lo-fi head-nod",
+    "drill": "driving pulse, sliding bass motion, aggressive bounce",
+    "phonk": "half-time weight, trunk-rattling bounce, dark groove",
+    "cloud rap": "floating half-time, spacious pocket, dreamy glide",
+    "pop": "upbeat bounce, four-on-the-floor propulsion, bright energy lift",
+    "synth pop": "driving pulse, sequenced propulsion, retro bounce",
+    "k-pop": "anthem lift, rapid section energy shifts, dance-floor drive",
+    "dream pop": "slow burn, floating pulse, dreamy sway",
+    "indie pop": "mid-tempo glide, organic bounce, warm pulse",
+    "r&b": "late-night flow, smooth mid-tempo groove, intimate sway",
+    "neo soul": "head-nod groove, jazzy swing, organic mid-tempo pocket",
+    "funk": "tight syncopated groove, driving pocket, infectious bounce",
+    "edm": "four-on-the-floor propulsion, build-and-release, massive energy",
+    "house": "four-on-the-floor pulse, locked groove, dancefloor motion",
+    "deep house": "late-night flow, deep groove pocket, hypnotic pulse",
+    "techno": "driving pulse, hypnotic repetition, relentless energy",
+    "trance": "anthem lift, euphoric build, soaring propulsion",
+    "synthwave": "driving mid-tempo, retro pulse, 80s cruising motion",
+    "future bass": "upbeat bounce, colorful energy, dynamic drops",
+    "rock": "driving pulse, guitar-propelled energy, anthem lift",
+    "indie rock": "mid-tempo drive, organic energy, dynamic contrast",
+    "post rock": "slow burn crescendo, building pulse, cinematic swell",
+    "shoegaze": "dreamy pulse, wall-of-sound sway, hazy motion",
+    "punk rock": "fast aggressive drive, raw propulsion, breakneck energy",
+    "acoustic": "gentle pulse, fingerpicked sway, intimate motion",
+    "folk": "storytelling pace, gentle strum groove, warm sway",
+    "jazz": "swinging motion, improvisational feel, live pocket",
+    "blues": "shuffle groove, slow burn, emotional weight",
+    "ambient": "drifting motion, no fixed pulse, evolving flow",
+    "dark ambient": "suspended motion, tense stillness, slow drift",
+    "cinematic orchestral": "sweeping motion, dynamic build, grand swell",
+    "reggaeton": "dembow bounce, Latin groove, dancefloor pulse",
+    "afrobeats": "polyrhythmic bounce, afro groove, infectious sway"
+  };
+
+  var rhythmEnergy = params.bpm + " bpm, mid-tempo groove";
+  Object.keys(rhythmEnergyMap).forEach(function(key) {
+    if (genreLower.indexOf(key) !== -1 || genreLower === key) {
+      rhythmEnergy = params.bpm + " bpm, " + rhythmEnergyMap[key];
+    }
+  });
+
+  // ===== Hook Strategy — 장르별 훅 전략 =====
+  var hookMap: Record<string, string> = {
+    "hip hop": "rhythmic chant hook, slogan-like repetition, call-and-response",
+    "trap": "melodic trap hook, auto-tune melody, repeated phrase with ad-libs",
+    "pop": "melodic earworm, instant singalong, bright chorus hook",
+    "r&b": "smooth melodic hook, vocal run anchor, intimate refrain",
+    "rock": "anthem chorus hook, guitar-driven singalong, powerful refrain",
+    "edm": "texture-led hook, synth melody drop, vocal chop hook",
+    "house": "vocal chop hook, repetitive phrase, dancefloor chant",
+    "ambient": "texture-led motif, evolving melodic fragment, atmospheric loop",
+    "jazz": "melodic head theme, improvisational return, swing hook",
+    "folk": "storytelling refrain, singalong chorus, simple melodic anchor",
+    "classical": "thematic motif, recurring melodic phrase, orchestral anchor"
+  };
+
+  var hookStrategy = "melodic hook, memorable refrain, singalong potential";
+  Object.keys(hookMap).forEach(function(key) {
+    if (genreLower.indexOf(key) !== -1) hookStrategy = hookMap[key];
+  });
+
+  // ===== 보컬 세부 프로필 (v3.0 dimensions) =====
+  var vocalDetailMap: Record<string, {voiceType: string; timbre: string; articulation: string; delivery: string; reverb: string}> = {
+    "Deep Male Vocals": { voiceType: "male low-mid register", timbre: "dark, warm, husky", articulation: "rounded, smooth", delivery: "restrained, grounding", reverb: "intimate room, short tail" },
+    "Smooth Male Vocals": { voiceType: "male mid register", timbre: "neutral, silky, clean", articulation: "crisp, effortless", delivery: "smooth, flowing", reverb: "medium plate, warm tail" },
+    "Raspy Male Vocals": { voiceType: "male mid register", timbre: "grainy, husky, warm", articulation: "percussive, raw", delivery: "urgent, emotional grain", reverb: "dry close-mic, minimal" },
+    "Falsetto Male": { voiceType: "male high register", timbre: "airy, bright, clean", articulation: "soft, delicate", delivery: "yearning, fragile, soaring", reverb: "wide hall, ethereal tail" },
+    "Male Rap": { voiceType: "male mid register", timbre: "neutral, percussive", articulation: "crisp, rhythmic, sharp diction", delivery: "confident, pocket-locked", reverb: "dry, tight room" },
+    "Male Whisper": { voiceType: "male low-mid register", timbre: "airy, breathy, dark", articulation: "soft, intimate", delivery: "intimate, hushed, close", reverb: "close-mic, breath-present" },
+    "Soft Female Vocals": { voiceType: "female mid register", timbre: "warm, clean, gentle", articulation: "soft, rounded", delivery: "tender, intimate", reverb: "warm plate, medium tail" },
+    "Powerful Female Vocals": { voiceType: "female high-mid register", timbre: "bright, projected, clean", articulation: "crisp, commanding", delivery: "powerful, dynamic range", reverb: "wide hall, dramatic" },
+    "Breathy Female": { voiceType: "female mid register", timbre: "airy, breathy, neutral", articulation: "soft, dissolving", delivery: "intimate, thinking-out-loud", reverb: "close-mic, airy tail" },
+    "Angelic Female": { voiceType: "female top-heavy register", timbre: "bright, crystalline, pure", articulation: "crisp, clear", delivery: "ethereal, soaring", reverb: "cathedral, long shimmer" },
+    "Female Rap": { voiceType: "female mid register", timbre: "neutral, sharp, clean", articulation: "percussive, precise", delivery: "confident, rhythmic precision", reverb: "dry, tight" },
+    "Choir": { voiceType: "multipart layered voices", timbre: "warm, stacked, collective", articulation: "unified, resonant", delivery: "collective swell, harmonic spread", reverb: "wide hall, cathedral space" },
+    "Distant Reverb Vocals": { voiceType: "solo distant placement", timbre: "washed, airy, neutral", articulation: "rounded, blurred", delivery: "dreamlike, far-field presence", reverb: "massive hall, long decay" },
+    "Auto-tuned Vocals": { voiceType: "pitch-corrected solo", timbre: "modern, polished, glossy", articulation: "gliding, smooth", delivery: "melodic precision, emotional bend", reverb: "medium plate, modern" },
+    "Instrumental (No Vocals)": { voiceType: "instrumental", timbre: "n/a", articulation: "n/a", delivery: "instruments carry all expression", reverb: "genre-appropriate" }
+  };
+
+  // ===== v3.0 프로덕션 시트 조립 =====
   var lines: string[] = [];
 
   // [GLOBAL META]
+  lines.push("[Era_Lock: " + eraLock + "]");
   lines.push("[Style_DNA: " + genreStyle + "]");
-  lines.push("[Rhythm: " + params.bpm + " bpm, " + params.moods.join(", ").toLowerCase() + "]");
+  lines.push("[Rhythm: " + rhythmEnergy + "]");
   lines.push("[Instruments: " + (instStr || "auto") + "]");
   lines.push("[Texture: " + textureStr + "]");
   lines.push("[Dynamic_Flow: " + dynamicFlow + "]");
   lines.push("[Evolution: " + evolution + "]");
 
-  // 감성 장면 (Forensic Translation)
+  // Forensic Translation (감성 장면)
   if (emotionScenes.length > 0) {
     lines.push("[Forensic_Translation: " + emotionScenes.slice(0, 2).join("; ") + "]");
   }
 
-  // [VOCAL PROFILE]
-  if (vocalPhysics) {
+  // Hook Strategy
+  lines.push("[Hook_Strategy: " + hookStrategy + "]");
+
+  // [VOCAL PROFILE] — v3.0 세부 필드
+  if (params.vocal && params.vocal !== "Instrumental (No Vocals)") {
+    var vd = vocalDetailMap[params.vocal];
     lines.push("");
-    lines.push("[VOCAL_PROFILE: " + vocalPhysics + "]");
-    if (vocalEmotion) {
-      lines.push("[PERFORMANCE_TRAITS: " + vocalEmotion + "]");
+    if (vd) {
+      lines.push("[VOCAL_PROFILE: " + vocalPhysics + "]");
+      lines.push("[VOICE_TYPE: " + vd.voiceType + "]");
+      lines.push("[TIMBRE: " + vd.timbre + "]");
+      lines.push("[ARTICULATION: " + vd.articulation + "]");
+      lines.push("[DELIVERY: " + vd.delivery + "]");
+      lines.push("[REVERB: " + vd.reverb + "]");
+      if (vocalEmotion) {
+        lines.push("[PERFORMANCE_TRAITS: " + vocalEmotion + "]");
+      }
+    } else {
+      lines.push("[VOCAL_PROFILE: " + vocalPhysics + "]");
+      if (vocalEmotion) {
+        lines.push("[PERFORMANCE_TRAITS: " + vocalEmotion + "]");
+      }
     }
+  } else if (params.vocal === "Instrumental (No Vocals)") {
+    lines.push("");
+    lines.push("[VOCAL_PROFILE: instrumental, no vocals]");
   }
 
   return lines.join("\n");
