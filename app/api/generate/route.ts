@@ -323,8 +323,10 @@ function generateTitle(genre: string, moods: string[]): string {
 
 // ===== POST 핸들러 =====
 export async function POST(request: NextRequest) {
-  // 보안: API 키는 헤더에서만 추출, 로깅 금지
-  var apiKey = request.headers.get("x-api-key") || "";
+  // 보안: API 키 우선순위
+  // 1. 사용자가 직접 입력한 키 (헤더)
+  // 2. 오너 키 (Vercel 환경변수 — 너만 쓰는 서버 키)
+  var apiKey = request.headers.get("x-api-key") || process.env.OWNER_ANTHROPIC_KEY || "";
 
   var body = await request.json();
   var { genre, moods, bpm, vocal, instruments, lyricsMode, lyricsTheme, language, sectionLength } = body;
