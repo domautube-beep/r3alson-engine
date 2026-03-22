@@ -1,5 +1,6 @@
 import Link from "next/link";
 import trendsData from "@/data/trends.json";
+import { ApiKeyBanner } from "@/components/api-key-banner";
 
 export default function Home() {
   var trends = trendsData.trends;
@@ -30,6 +31,9 @@ export default function Home() {
 
       {/* 메인 콘텐츠 */}
       <main className="flex-1 px-5 pb-44 relative z-10">
+
+        {/* API 키 미설정 배너 */}
+        <ApiKeyBanner />
 
         {/* 히어로 추천 카드 */}
         <section className="mb-8 fade-in">

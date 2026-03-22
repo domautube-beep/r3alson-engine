@@ -871,16 +871,27 @@ export default function CreatePage() {
               </div>
             </div>
 
-            {/* API 키 상태 표시 */}
+            {/* API 키 상태 배너 */}
             {!isKeySet && (
-              <div className="glass-card p-3 flex items-center gap-3" style={{ borderColor: "rgba(251, 191, 36, 0.2)" }}>
-                <span className="text-lg">{"\u26A0\uFE0F"}</span>
-                <div className="flex-1">
-                  <p className="text-xs font-semibold" style={{ color: "#FBBF24" }}>API 키 미설정</p>
-                  <p className="text-[10px]" style={{ color: "#7A7A8E" }}>데모 가사가 출력됩니다. AI 가사를 원하면 설정에서 API 키를 입력하세요.</p>
+              <Link
+                href="/settings"
+                className="block rounded-xl p-4 transition-all"
+                style={{
+                  background: "linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.06))",
+                  border: "1px solid rgba(251, 191, 36, 0.3)"
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(251, 191, 36, 0.15)" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" strokeWidth="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold" style={{ color: "#FBBF24" }}>API 키를 연결하세요</p>
+                    <p className="text-xs mt-0.5" style={{ color: "#9CA3AF" }}>지금은 데모 가사만 나옵니다. 연결하면 AI가 매번 새 가사를 생성합니다.</p>
+                  </div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
                 </div>
-                <Link href="/settings" className="text-[10px] px-2 py-1 rounded-lg" style={{ backgroundColor: "rgba(139,92,246,0.1)", color: "#8B5CF6" }}>설정</Link>
-              </div>
+              </Link>
             )}
 
             {/* 가사 모드 선택 */}
