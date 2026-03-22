@@ -220,44 +220,158 @@ export default function CreatePage() {
   async function generatePlaylist() {
     setIsGeneratingPlaylist(true);
 
-    // 원곡 기반 배리에이션 전략
-    var variations = [
-      { label: "원곡 그대로", desc: "동일한 분위기의 시작곡" },
-      { label: "템포 다운", desc: "BPM을 낮춰 더 차분하게" },
-      { label: "악기 변화", desc: "다른 악기로 같은 감정을" },
-      { label: "무드 시프트", desc: "살짝 다른 감정 색깔" },
-      { label: "에너지 업", desc: "같은 테마, 더 강한 에너지" },
-      { label: "어쿠스틱 버전", desc: "벗겨낸 느낌, 날것의 감정" },
-      { label: "야간 버전", desc: "더 어둡고 깊은 시간대" },
-      { label: "새벽 버전", desc: "고요하고 내밀한 분위기" },
-      { label: "확장 버전", desc: "원곡을 더 크게 펼친 느낌" },
-      { label: "미니멀 버전", desc: "최소한의 요소로 핵심만" }
-    ];
+    // ===== 장르별 맞춤 배리에이션 전략 =====
+    var genreLower = genre.toLowerCase();
 
-    // BPM 배리에이션
-    var bpmVariations = [0, -15, -5, +5, +20, -25, -10, -20, +10, -30];
+    // 장르 카테고리 감지
+    var isRapGenre = genreLower.indexOf("hip") !== -1 || genreLower.indexOf("rap") !== -1 || genreLower.indexOf("trap") !== -1 || genreLower.indexOf("drill") !== -1 || genreLower.indexOf("phonk") !== -1;
+    var isAmbientGenre = genreLower.indexOf("ambient") !== -1 || genreLower.indexOf("meditation") !== -1 || genreLower.indexOf("sleep") !== -1 || genreLower.indexOf("study") !== -1 || genreLower.indexOf("drone") !== -1;
+    var isRockGenre = genreLower.indexOf("rock") !== -1 || genreLower.indexOf("metal") !== -1 || genreLower.indexOf("punk") !== -1 || genreLower.indexOf("shoegaze") !== -1;
+    var isElectronicGenre = genreLower.indexOf("edm") !== -1 || genreLower.indexOf("house") !== -1 || genreLower.indexOf("techno") !== -1 || genreLower.indexOf("trance") !== -1 || genreLower.indexOf("dubstep") !== -1 || genreLower.indexOf("synthwave") !== -1 || genreLower.indexOf("future") !== -1;
+    var isJazzGenre = genreLower.indexOf("jazz") !== -1 || genreLower.indexOf("blues") !== -1 || genreLower.indexOf("bossa") !== -1;
+    var isOrchestralGenre = genreLower.indexOf("classical") !== -1 || genreLower.indexOf("orchestral") !== -1 || genreLower.indexOf("film") !== -1 || genreLower.indexOf("piano solo") !== -1;
+    var isLofiGenre = genreLower.indexOf("lo-fi") !== -1 || genreLower.indexOf("lofi") !== -1 || genreLower.indexOf("bedroom") !== -1 || genreLower.indexOf("chillwave") !== -1;
 
-    // 무드 시프트 풀
+    // 장르별 배리에이션 정의
+    var variations: {label: string; desc: string}[] = [];
+    if (isRapGenre) {
+      variations = [
+        { label: "원곡 그대로", desc: "오리지널 버전" },
+        { label: "트랩 리믹스", desc: "808 헤비, 하이햇 롤링" },
+        { label: "붐뱁 버전", desc: "올드스쿨 샘플, 바운스 그루브" },
+        { label: "클라우드 랩", desc: "몽환적, 스페이시 리버브" },
+        { label: "드릴 버전", desc: "슬라이딩 808, 다크 에너지" },
+        { label: "어쿠스틱 랩", desc: "기타 + 랩, 날것의 감정" },
+        { label: "야간 버전", desc: "레이트 나이트, 더 어둡게" },
+        { label: "에모 랩", desc: "멜랑콜릭, 기타 드리븐" },
+        { label: "하이에너지", desc: "빠른 플로우, 강한 비트" },
+        { label: "미니멀 비트", desc: "최소 요소, 보컬 포커스" }
+      ];
+    } else if (isAmbientGenre) {
+      variations = [
+        { label: "원곡 그대로", desc: "오리지널 앰비언스" },
+        { label: "딥 드론", desc: "더 깊고 느린 울림" },
+        { label: "네이처 사운드", desc: "비, 바람, 자연 텍스처 추가" },
+        { label: "다크 앰비언트", desc: "불안하고 미스터리한 분위기" },
+        { label: "스페이스 버전", desc: "우주적, 광활한 리버브" },
+        { label: "피아노 앰비언트", desc: "피아노 + 패드 레이어" },
+        { label: "테이프 새츄레이션", desc: "빈티지 테이프 워밍" },
+        { label: "글리치 버전", desc: "디지털 텍스처, 미묘한 글리치" },
+        { label: "오케스트라 블렌드", desc: "스트링 + 앰비언트 패드" },
+        { label: "미니멀 버전", desc: "단일 텍스처, 극도로 절제" }
+      ];
+    } else if (isElectronicGenre) {
+      variations = [
+        { label: "원곡 그대로", desc: "오리지널 프로덕션" },
+        { label: "딥 버전", desc: "서브 베이스 강조, 딥한 그루브" },
+        { label: "보컬 촙", desc: "보컬 샘플 촙 + 필터" },
+        { label: "빌드업 버전", desc: "긴 빌드업, 강한 드롭" },
+        { label: "칠아웃 믹스", desc: "BPM 다운, 릴렉스 그루브" },
+        { label: "레트로 리믹스", desc: "80s 아날로그 신디 + 게이티드 리버브" },
+        { label: "하드 버전", desc: "디스토션 추가, 하드 킥" },
+        { label: "퓨처 베이스", desc: "러쉬 코드, 피치드 보컬" },
+        { label: "브레이크비트", desc: "잘게 쪼갠 드럼, 에너지 변화" },
+        { label: "앰비언트 믹스", desc: "드롭 없이 분위기만" }
+      ];
+    } else if (isRockGenre) {
+      variations = [
+        { label: "원곡 그대로", desc: "오리지널 밴드 사운드" },
+        { label: "어쿠스틱 버전", desc: "언플러그드, 날것의 감정" },
+        { label: "하드 버전", desc: "디스토션 더, 파워 코드" },
+        { label: "발라드 버전", desc: "느린 템포, 감성적" },
+        { label: "라이브 버전", desc: "크라우드 에너지, 라이브 질감" },
+        { label: "슈게이즈 믹스", desc: "리버브 월, 헤이지" },
+        { label: "포스트록 버전", desc: "크레센도 빌드, 미니멀 보컬" },
+        { label: "펑크 버전", desc: "빠르고 짧고 날카롭게" },
+        { label: "스트링 버전", desc: "기타 + 스트링 오케스트라" },
+        { label: "미니멀 버전", desc: "기타 하나, 보컬 하나" }
+      ];
+    } else if (isJazzGenre) {
+      variations = [
+        { label: "원곡 그대로", desc: "오리지널 재즈 어레인지" },
+        { label: "스무스 버전", desc: "실키한 질감, 이지 리스닝" },
+        { label: "비밥 버전", desc: "빠른 코드 체인지, 임프로" },
+        { label: "보사노바 믹스", desc: "나일론 기타, 브라질리안 그루브" },
+        { label: "나이트 클럽", desc: "색소폰 솔로, 딤 라이팅" },
+        { label: "재즈 퓨전", desc: "일렉트릭 + 어쿠스틱 블렌드" },
+        { label: "블루스 터치", desc: "12마디, 감성적 밴딩" },
+        { label: "보컬 재즈", desc: "인티밋 보컬 중심" },
+        { label: "빅밴드 버전", desc: "브라스 섹션, 풀 밴드" },
+        { label: "미니멀 트리오", desc: "피아노 + 베이스 + 드럼" }
+      ];
+    } else if (isOrchestralGenre) {
+      variations = [
+        { label: "원곡 그대로", desc: "오리지널 오케스트라" },
+        { label: "스트링만", desc: "현악 사중주 버전" },
+        { label: "피아노 솔로", desc: "피아노 단독 편곡" },
+        { label: "에픽 버전", desc: "팀파니 + 브라스, 장대하게" },
+        { label: "미니멀 버전", desc: "단일 악기, 여백의 미" },
+        { label: "일렉트로닉 블렌드", desc: "오케스트라 + 신디 텍스처" },
+        { label: "합창 버전", desc: "코러스 + 오케스트라" },
+        { label: "챔버 뮤직", desc: "소규모 앙상블" },
+        { label: "서스펜스 버전", desc: "텐션 빌드, 미스터리" },
+        { label: "새벽 버전", desc: "고요하고 서정적" }
+      ];
+    } else {
+      // 팝, R&B, 포크, 기타 장르: 범용 배리에이션
+      variations = [
+        { label: "원곡 그대로", desc: "동일한 분위기의 시작곡" },
+        { label: "템포 다운", desc: "BPM을 낮춰 더 차분하게" },
+        { label: "악기 변화", desc: "다른 악기로 같은 감정을" },
+        { label: "무드 시프트", desc: "살짝 다른 감정 색깔" },
+        { label: "에너지 업", desc: "같은 테마, 더 강한 에너지" },
+        { label: "어쿠스틱 버전", desc: "벗겨낸 느낌, 날것의 감정" },
+        { label: "야간 버전", desc: "더 어둡고 깊은 시간대" },
+        { label: "새벽 버전", desc: "고요하고 내밀한 분위기" },
+        { label: "확장 버전", desc: "원곡을 더 크게 펼친 느낌" },
+        { label: "미니멀 버전", desc: "최소한의 요소로 핵심만" }
+      ];
+    }
+
+    // ===== 장르별 BPM 배리에이션 =====
+    var bpmVariations: number[] = [];
+    if (isRapGenre) {
+      bpmVariations = [0, +10, -15, +5, +20, -20, -5, +15, +25, -10];
+    } else if (isAmbientGenre) {
+      bpmVariations = [0, -10, -5, -15, -20, -8, -12, -25, +5, -30];
+    } else if (isElectronicGenre) {
+      bpmVariations = [0, +5, +10, +15, -10, -5, +20, +8, +12, -15];
+    } else if (isRockGenre) {
+      bpmVariations = [0, -10, +15, -20, +10, -5, +20, +25, -15, -25];
+    } else {
+      bpmVariations = [0, -15, -5, +5, +20, -25, -10, -20, +10, -30];
+    }
+
+    // ===== 장르별 무드 시프트 풀 (확장) =====
     var moodShifts: Record<string, string[]> = {
-      "melancholic": ["bittersweet", "wistful", "tender", "somber", "nostalgic"],
-      "dark": ["mysterious", "eerie", "brooding", "haunting", "sinister"],
-      "chill": ["peaceful", "calm", "dreamy", "serene", "warm"],
-      "energetic": ["bold", "fierce", "triumphant", "euphoric", "wild"],
-      "dreamy": ["ethereal", "atmospheric", "surreal", "hypnotic", "peaceful"],
-      "aggressive": ["fierce", "intense", "rebellious", "bold", "dark"],
-      "nostalgic": ["bittersweet", "sentimental", "warm", "wistful", "tender"],
-      "romantic": ["tender", "warm", "intimate", "sentimental", "dreamy"]
+      "melancholic": ["bittersweet", "wistful", "tender", "somber", "nostalgic", "haunting", "vulnerable", "aching", "lonely"],
+      "dark": ["mysterious", "eerie", "brooding", "haunting", "sinister", "ominous", "tense", "shadowy", "foreboding"],
+      "chill": ["peaceful", "calm", "dreamy", "serene", "warm", "mellow", "gentle", "floating", "hazy"],
+      "energetic": ["bold", "fierce", "triumphant", "euphoric", "wild", "dynamic", "driving", "explosive", "powerful"],
+      "dreamy": ["ethereal", "atmospheric", "surreal", "hypnotic", "peaceful", "floaty", "hazy", "shimmering", "misty"],
+      "aggressive": ["fierce", "intense", "rebellious", "bold", "dark", "raw", "gritty", "confrontational", "relentless"],
+      "nostalgic": ["bittersweet", "sentimental", "warm", "wistful", "tender", "faded", "distant", "golden", "yearning"],
+      "romantic": ["tender", "warm", "intimate", "sentimental", "dreamy", "gentle", "longing", "passionate", "soft"],
+      "happy": ["bright", "playful", "cheerful", "joyful", "uplifting", "sunny", "carefree", "vibrant", "bubbly"],
+      "epic": ["triumphant", "cinematic", "dramatic", "soaring", "powerful", "majestic", "grand", "heroic", "sweeping"],
+      "groovy": ["funky", "smooth", "bouncy", "rhythmic", "slinky", "tight", "syncopated", "cool", "slick"],
+      "atmospheric": ["spacious", "immersive", "evolving", "textured", "vast", "layered", "ambient", "floating", "expansive"],
+      "mysterious": ["enigmatic", "shadowy", "curious", "veiled", "cryptic", "ethereal", "elusive", "strange", "haunting"],
+      "cinematic": ["epic", "dramatic", "sweeping", "emotional", "grand", "triumphant", "tense", "soaring", "majestic"]
     };
 
-    // 악기 교체 풀
+    // 악기 교체 풀 (확장)
     var instrumentSwaps: Record<string, string[]> = {
-      "piano": ["rhodes", "electric piano", "wurlitzer", "harp", "music box"],
-      "electric guitar": ["acoustic guitar", "clean guitar", "fingerstyle guitar", "slide guitar"],
-      "acoustic guitar": ["piano", "ukulele", "fingerstyle guitar", "harp"],
-      "808 bass": ["sub bass", "bass guitar", "synth bass"],
-      "pad synth": ["strings", "ambient textures", "warm pads", "organ"],
-      "live drums": ["brushed drums", "lo-fi drums", "drum machine", "minimal percussion"],
-      "strings": ["cello", "violin", "orchestral strings", "harp"]
+      "piano": ["rhodes", "electric piano", "wurlitzer", "harp", "music box", "celesta", "organ"],
+      "electric guitar": ["acoustic guitar", "clean guitar", "fingerstyle guitar", "slide guitar", "12-string guitar"],
+      "acoustic guitar": ["piano", "ukulele", "fingerstyle guitar", "harp", "mandolin", "nylon guitar"],
+      "808 bass": ["sub bass", "bass guitar", "synth bass", "distorted bass", "deep sub"],
+      "pad synth": ["strings", "ambient textures", "warm pads", "organ", "choir pads"],
+      "live drums": ["brushed drums", "lo-fi drums", "drum machine", "minimal percussion", "electronic drums"],
+      "strings": ["cello", "violin", "orchestral strings", "harp", "viola"],
+      "synth": ["analog synth", "digital synth", "arpeggiated synth", "pad synth", "lead synth"],
+      "saxophone": ["flute", "trumpet", "clarinet", "oboe"],
+      "organ": ["piano", "rhodes", "synth pad", "accordion"]
     };
 
     var tracks: {title: string; prompt: string; lyrics: string; variation: string}[] = [];
@@ -270,8 +384,8 @@ export default function CreatePage() {
       var trackMoods = selectedMoods.slice();
       if (i > 0) {
         var baseMood = selectedMoods[0] ? selectedMoods[0].toLowerCase() : "";
-        var shifts = moodShifts[baseMood] || ["atmospheric", "warm", "gentle"];
-        trackMoods = [shifts[i % shifts.length]].concat(selectedMoods.slice(1));
+        var shifts = moodShifts[baseMood] || ["atmospheric", "warm", "gentle", "textured", "evolving"];
+        trackMoods = [shifts[(i - 1) % shifts.length]].concat(selectedMoods.slice(1));
       }
 
       // 악기 배리에이션 — 모든 후속 트랙에 적용
@@ -280,20 +394,47 @@ export default function CreatePage() {
         var swapTarget = trackInst[0].toLowerCase();
         var swapPool = instrumentSwaps[swapTarget];
         if (swapPool) {
-          trackInst[0] = swapPool[i % swapPool.length];
+          trackInst[0] = swapPool[(i - 1) % swapPool.length];
         }
       }
 
-      // 어쿠스틱 버전
-      if (v.label === "어쿠스틱 버전") {
+      // 어쿠스틱 계열 배리에이션
+      if (v.label.indexOf("어쿠스틱") !== -1) {
         trackInst = ["acoustic guitar", "soft percussion"];
         trackBpm = Math.max(50, bpm - 20);
       }
 
-      // 미니멀 버전
-      if (v.label === "미니멀 버전") {
+      // 미니멀 계열 배리에이션
+      if (v.label.indexOf("미니멀") !== -1) {
         trackInst = trackInst.length > 0 ? [trackInst[0]] : ["piano"];
         trackBpm = Math.max(50, bpm - 10);
+      }
+
+      // 랩 장르: 서브장르 특화 악기 세팅
+      if (isRapGenre && i > 0) {
+        if (v.label.indexOf("트랩") !== -1) trackInst = ["808 bass", "trap hi-hats", "dark pads"];
+        else if (v.label.indexOf("붐뱁") !== -1) trackInst = ["vinyl samples", "boom bap drums", "piano"];
+        else if (v.label.indexOf("클라우드") !== -1) trackInst = ["ethereal pads", "808 bass", "ambient textures"];
+        else if (v.label.indexOf("드릴") !== -1) trackInst = ["sliding 808s", "aggressive hi-hats", "dark synth"];
+        else if (v.label.indexOf("에모") !== -1) trackInst = ["electric guitar", "808 bass", "atmospheric reverb"];
+      }
+
+      // 앰비언트 장르: 텍스처 특화 악기 세팅
+      if (isAmbientGenre && i > 0) {
+        if (v.label.indexOf("드론") !== -1) trackInst = ["sustained drones", "deep sub frequencies"];
+        else if (v.label.indexOf("네이처") !== -1) trackInst = ["rain sounds", "field recordings", "soft pads"];
+        else if (v.label.indexOf("스페이스") !== -1) trackInst = ["vast reverb pads", "cosmic textures", "deep delay"];
+        else if (v.label.indexOf("글리치") !== -1) trackInst = ["glitch textures", "digital artifacts", "soft pads"];
+        else if (v.label.indexOf("피아노") !== -1) trackInst = ["minimal piano", "ambient pad layers"];
+      }
+
+      // 일렉트로닉 장르: 프로덕션 특화
+      if (isElectronicGenre && i > 0) {
+        if (v.label.indexOf("딥") !== -1) trackInst = ["deep sub bass", "minimal percussion", "warm pads"];
+        else if (v.label.indexOf("레트로") !== -1) trackInst = ["analog synths", "gated reverb drums", "arpeggios"];
+        else if (v.label.indexOf("하드") !== -1) trackInst = ["distorted kick", "heavy bass", "aggressive synth"];
+        else if (v.label.indexOf("퓨처") !== -1) trackInst = ["lush chords", "pitched vocals", "supersaw"];
+        else if (v.label.indexOf("앰비언트") !== -1) trackInst = ["atmospheric pads", "soft textures", "minimal rhythm"];
       }
 
       // 제목 배리에이션
@@ -318,7 +459,8 @@ export default function CreatePage() {
             lyricsMode: i === 0 ? "none" : lyricsMode,
             lyricsTheme: lyricsTheme ? lyricsTheme + " (" + v.label + " version)" : v.label,
             language: language,
-            sectionLength: sectionLength
+            sectionLength: sectionLength,
+            variationIndex: i
           })
         });
         var trackData = await trackRes.json();
@@ -338,9 +480,11 @@ export default function CreatePage() {
       }
     }
 
-    setPlaylistTracks(tracks);
+    if (tracks.length > 0) {
+      setPlaylistTracks(tracks);
+      setStep(5);
+    }
     setIsGeneratingPlaylist(false);
-    setStep(5);
   }
 
   // 이전 스텝으로 돌아가기
@@ -1134,9 +1278,10 @@ export default function CreatePage() {
 
               <button
                 onClick={generatePlaylist}
-                className="w-full py-3 rounded-xl font-semibold text-white glow-btn"
+                disabled={isGeneratingPlaylist}
+                className={"w-full py-3 rounded-xl font-semibold text-white " + (isGeneratingPlaylist ? "opacity-50" : "glow-btn")}
               >
-                {playlistCount}곡 플레이리스트 생성
+                {isGeneratingPlaylist ? "생성 중... (" + playlistTracks.length + "/" + playlistCount + "곡)" : playlistCount + "곡 플레이리스트 생성"}
               </button>
             </div>
 
