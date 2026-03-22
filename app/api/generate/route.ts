@@ -955,13 +955,15 @@ export async function POST(request: NextRequest) {
   if (!language) language = "en";
   if (!sectionLength) sectionLength = "normal";
 
-  var prompt = generateStylePrompt({
+  var promptResult = generateStylePrompt({
     genre: genre,
     moods: moods,
     bpm: bpm || 80,
     vocal: vocal || "",
     instruments: instruments || []
   });
+  var sunoPrompt = promptResult.sunoPrompt;
+  var productionNote = promptResult.productionNote;
 
   var lyrics = "";
   var title = "";
@@ -1030,7 +1032,9 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({
-    prompt: prompt,
+    sunoPrompt: sunoPrompt,
+    productionNote: productionNote,
+    prompt: sunoPrompt,
     lyrics: lyrics,
     title: title,
     tags: tags,
