@@ -17,6 +17,9 @@ export async function callClaude(
   userPrompt: string,
   maxTokens?: number
 ): Promise<{ success: boolean; text: string; error?: string }> {
+  // 공백 제거 (복사 시 앞뒤 공백 포함 방지)
+  apiKey = apiKey.trim();
+
   try {
     var res = await fetch(ANTHROPIC_API_URL, {
       method: "POST",

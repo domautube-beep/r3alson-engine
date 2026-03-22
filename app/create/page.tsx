@@ -266,17 +266,17 @@ export default function CreatePage() {
       var v = variations[i % variations.length];
       var trackBpm = Math.max(50, Math.min(180, bpm + bpmVariations[i % bpmVariations.length]));
 
-      // 무드 배리에이션
+      // 무드 배리에이션 — 모든 후속 트랙에 적용
       var trackMoods = selectedMoods.slice();
-      if (i > 0 && i % 3 === 0) {
+      if (i > 0) {
         var baseMood = selectedMoods[0] ? selectedMoods[0].toLowerCase() : "";
         var shifts = moodShifts[baseMood] || ["atmospheric", "warm", "gentle"];
         trackMoods = [shifts[i % shifts.length]].concat(selectedMoods.slice(1));
       }
 
-      // 악기 배리에이션
+      // 악기 배리에이션 — 모든 후속 트랙에 적용
       var trackInst = selectedInstruments.slice();
-      if (i > 0 && i % 2 === 0 && trackInst.length > 0) {
+      if (i > 0 && trackInst.length > 0) {
         var swapTarget = trackInst[0].toLowerCase();
         var swapPool = instrumentSwaps[swapTarget];
         if (swapPool) {
