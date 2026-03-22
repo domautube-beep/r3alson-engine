@@ -520,31 +520,71 @@ export default function CreatePage() {
                "순서대로 선택하세요. 각 단계를 완료하면 다음이 열려요."}
             </p>
 
-            {/* ── 1. 장르 선택 (항상 보임) ── */}
-            <div className="glass-card p-4 fade-in">
-              <div className="flex items-center gap-2 mb-3">
+            {/* ── 1. 장르 선택 (대분류 탭 + 소분류 칩) ── */}
+            <div className="glass-card overflow-hidden fade-in">
+              {/* 헤더 */}
+              <div className="flex items-center gap-2 p-4 pb-3">
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: genre ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#1E1E2E", color: genre ? "white" : "#7A7A8E" }}>1</div>
                 <label className="text-sm font-semibold">장르</label>
                 {genre && <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(52, 211, 153, 0.1)", color: "#34D399" }}>{genre}</span>}
               </div>
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                <button onClick={function() { setGenreCategory(""); }} className={"px-3 py-1 text-xs rounded-full transition-all " + (!genreCategory ? "mood-chip mood-chip-active" : "mood-chip")}>전체</button>
-                {Object.keys(GENRE_CATEGORIES).map(function(cat) {
-                  return <button key={cat} onClick={function() { setGenreCategory(cat); }} className={"px-3 py-1 text-xs rounded-full transition-all " + (genreCategory === cat ? "mood-chip mood-chip-active" : "mood-chip")}>{cat}</button>;
-                })}
+
+              {/* 대분류 탭 (가로 스크롤, 다른 색상) */}
+              <div className="overflow-x-auto px-4 pb-3" style={{ WebkitOverflowScrolling: "touch" }}>
+                <div className="flex gap-1.5" style={{ minWidth: "max-content" }}>
+                  <button
+                    onClick={function() { setGenreCategory(""); }}
+                    className="px-4 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap"
+                    style={{
+                      backgroundColor: !genreCategory ? "#EC4899" : "rgba(236, 72, 153, 0.08)",
+                      color: !genreCategory ? "white" : "#EC4899",
+                      border: "1px solid " + (!genreCategory ? "#EC4899" : "rgba(236, 72, 153, 0.2)")
+                    }}
+                  >전체</button>
+                  {Object.keys(GENRE_CATEGORIES).map(function(cat) {
+                    var isActive = genreCategory === cat;
+                    return (
+                      <button
+                        key={cat}
+                        onClick={function() { setGenreCategory(cat); }}
+                        className="px-4 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap"
+                        style={{
+                          backgroundColor: isActive ? "#EC4899" : "rgba(236, 72, 153, 0.08)",
+                          color: isActive ? "white" : "#EC4899",
+                          border: "1px solid " + (isActive ? "#EC4899" : "rgba(236, 72, 153, 0.2)")
+                        }}
+                      >{cat}</button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {(genreCategory ? GENRE_CATEGORIES[genreCategory] : ALL_GENRES).map(function(g) {
-                  var isSelected = genre === g;
-                  var trend = trendsData.trends.find(function(t) { return t.genre === g; });
-                  return <button key={g} onClick={function() { selectGenre(g); }} className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}>{g}{trend ? " +" + trend.growth + "%" : ""}</button>;
-                })}
-              </div>
-              {genre && getCurrentTrendInfo() && (
-                <p className="text-xs mt-2" style={{ color: getCurrentTrendInfo()!.growth > 0 ? "#34D399" : "#7A7A8E" }}>
-                  {getCurrentTrendInfo()!.growth > 0 ? "이 장르는 현재 성장 중" : "트렌드와 다른 선택도 차별화 전략이 될 수 있어요"}
+
+              {/* 소분류 장르 칩 (보라색 계열) */}
+              <div className="px-4 pb-4">
+                <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>
+                  {genreCategory || "전체"} — 장르 선택
                 </p>
-              )}
+                <div className="flex flex-wrap gap-2">
+                  {(genreCategory ? GENRE_CATEGORIES[genreCategory] : ALL_GENRES).map(function(g) {
+                    var isSelected = genre === g;
+                    var trend = trendsData.trends.find(function(t) { return t.genre === g; });
+                    return (
+                      <button
+                        key={g}
+                        onClick={function() { selectGenre(g); }}
+                        className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")}
+                      >
+                        {g}{trend ? " +" + trend.growth + "%" : ""}
+                      </button>
+                    );
+                  })}
+                </div>
+                {genre && getCurrentTrendInfo() && (
+                  <p className="text-xs mt-2" style={{ color: getCurrentTrendInfo()!.growth > 0 ? "#34D399" : "#7A7A8E" }}>
+                    {getCurrentTrendInfo()!.growth > 0 ? "이 장르는 현재 성장 중" : "트렌드와 다른 선택도 차별화 전략이 될 수 있어요"}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* ── 2. 무드 선택 (장르 선택 후 공개) ── */}
@@ -556,42 +596,72 @@ export default function CreatePage() {
                 </div>
               </div>
             ) : (
-              <div className="glass-card p-4 fade-in">
-                <div className="flex items-center gap-2 mb-3">
+              <div className="glass-card overflow-hidden fade-in">
+                {/* 헤더 */}
+                <div className="flex items-center gap-2 p-4 pb-3">
                   <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: selectedMoods.length > 0 ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#1E1E2E", color: selectedMoods.length > 0 ? "white" : "#7A7A8E" }}>2</div>
                   <label className="text-sm font-semibold">무드 <span style={{ color: "#7A7A8E" }}>(여러 개)</span></label>
                 </div>
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  <button onClick={function() { setMoodCategory(""); }} className={"px-3 py-1 text-xs rounded-full transition-all " + (!moodCategory ? "mood-chip mood-chip-active" : "mood-chip")}>전체</button>
-                  {Object.keys(MOOD_CATEGORIES).map(function(cat) {
-                    return <button key={cat} onClick={function() { setMoodCategory(cat); }} className={"px-3 py-1 text-xs rounded-full transition-all " + (moodCategory === cat ? "mood-chip mood-chip-active" : "mood-chip")}>{cat}</button>;
-                  })}
+
+                {/* 대분류 탭 (핑크 — 가로 스크롤) */}
+                <div className="overflow-x-auto px-4 pb-3" style={{ WebkitOverflowScrolling: "touch" }}>
+                  <div className="flex gap-1.5" style={{ minWidth: "max-content" }}>
+                    <button
+                      onClick={function() { setMoodCategory(""); }}
+                      className="px-4 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap"
+                      style={{
+                        backgroundColor: !moodCategory ? "#EC4899" : "rgba(236, 72, 153, 0.08)",
+                        color: !moodCategory ? "white" : "#EC4899",
+                        border: "1px solid " + (!moodCategory ? "#EC4899" : "rgba(236, 72, 153, 0.2)")
+                      }}
+                    >전체</button>
+                    {Object.keys(MOOD_CATEGORIES).map(function(cat) {
+                      var isActive = moodCategory === cat;
+                      return (
+                        <button
+                          key={cat}
+                          onClick={function() { setMoodCategory(cat); }}
+                          className="px-4 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap"
+                          style={{
+                            backgroundColor: isActive ? "#EC4899" : "rgba(236, 72, 153, 0.08)",
+                            color: isActive ? "white" : "#EC4899",
+                            border: "1px solid " + (isActive ? "#EC4899" : "rgba(236, 72, 153, 0.2)")
+                          }}
+                        >{cat}</button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {/* 추천 무드 먼저 */}
+
+                {/* 소분류 무드 칩 (보라색) */}
+                <div className="px-4 pb-4">
+                  {/* 추천 */}
                   {genre && getRecommendations(genre) && !moodCategory && (
-                    <span className="w-full text-[10px] uppercase tracking-widest mb-1" style={{ color: "#8B5CF6" }}>추천</span>
+                    <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#34D399" }}>추천</p>
                   )}
-                  {(moodCategory ? MOOD_CATEGORIES[moodCategory] : (function() {
-                    var rec = genre ? getRecommendations(genre) : null;
-                    if (!rec) return ALL_MOODS;
-                    // 추천 무드를 앞에, 나머지를 뒤에
-                    var recommended = rec.moods.filter(function(m) { return ALL_MOODS.indexOf(m) !== -1; });
-                    var rest = ALL_MOODS.filter(function(m) { return recommended.indexOf(m) === -1; });
-                    return recommended.concat(["__DIVIDER__"]).concat(rest);
-                  })()).map(function(m) {
-                    if (m === "__DIVIDER__") return <span key="div" className="w-full text-[10px] uppercase tracking-widest mt-2 mb-1" style={{ color: "#4A4A5E" }}>기타</span>;
-                    var isSelected = selectedMoods.includes(m);
-                    var rec = genre ? getRecommendations(genre) : null;
-                    var isRecommended = rec && rec.moods.indexOf(m) !== -1;
-                    return <button key={m} onClick={function() { toggleMood(m); }} className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")} style={isRecommended && !isSelected ? { borderColor: "rgba(139, 92, 246, 0.3)" } : {}}>{m}</button>;
-                  })}
+
+                  <div className="flex flex-wrap gap-2">
+                    {(moodCategory ? MOOD_CATEGORIES[moodCategory] : (function() {
+                      var rec = genre ? getRecommendations(genre) : null;
+                      if (!rec) return ALL_MOODS;
+                      var recommended = rec.moods.filter(function(m) { return ALL_MOODS.indexOf(m) !== -1; });
+                      var rest = ALL_MOODS.filter(function(m) { return recommended.indexOf(m) === -1; });
+                      return recommended.concat(["__DIVIDER__"]).concat(rest);
+                    })()).map(function(m) {
+                      if (m === "__DIVIDER__") return <span key="div" className="w-full text-[10px] uppercase tracking-widest mt-3 mb-1" style={{ color: "#4A4A5E" }}>기타</span>;
+                      var isSelected = selectedMoods.includes(m);
+                      var rec = genre ? getRecommendations(genre) : null;
+                      var isRecommended = rec && rec.moods.indexOf(m) !== -1;
+                      return <button key={m} onClick={function() { toggleMood(m); }} className={"px-3 py-1.5 text-sm rounded-full transition-all " + (isSelected ? "mood-chip mood-chip-active" : "mood-chip")} style={isRecommended && !isSelected ? { borderColor: "rgba(52, 211, 153, 0.3)" } : {}}>{m}</button>;
+                    })}
+                  </div>
+
+                  <div className="flex gap-2 mt-3">
+                    <input type="text" value={customMood} onChange={function(e) { setCustomMood(e.target.value); }} placeholder="직접 입력" className="input-dark text-sm" onKeyDown={function(e) { if (e.key === "Enter") addCustomMood(); }} />
+                    <button onClick={addCustomMood} className="px-4 py-2 rounded-xl text-sm font-medium" style={{ backgroundColor: "#8B5CF6", color: "white" }}>추가</button>
+                  </div>
+                  {selectedMoods.length > 0 && <p className="text-xs mt-2" style={{ color: "#8B5CF6" }}>선택됨: {selectedMoods.join(", ")}</p>}
                 </div>
-                <div className="flex gap-2 mt-3">
-                  <input type="text" value={customMood} onChange={function(e) { setCustomMood(e.target.value); }} placeholder="직접 입력" className="input-dark text-sm" onKeyDown={function(e) { if (e.key === "Enter") addCustomMood(); }} />
-                  <button onClick={addCustomMood} className="px-4 py-2 rounded-xl text-sm font-medium" style={{ backgroundColor: "#8B5CF6", color: "white" }}>추가</button>
-                </div>
-                {selectedMoods.length > 0 && <p className="text-xs mt-2" style={{ color: "#8B5CF6" }}>선택됨: {selectedMoods.join(", ")}</p>}
               </div>
             )}
 
