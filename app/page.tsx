@@ -14,14 +14,14 @@ export default function Home() {
           <h1 className="text-2xl font-extrabold tracking-tight text-gradient">
             HitCraft
           </h1>
-          <p className="text-[11px] tracking-widest uppercase" style={{ color: "#4A4A5E" }}>
+          <p className="text-[11px] tracking-widest uppercase" style={{ color: "#6E6E88" }}>
             AI Music Hit Maker
           </p>
         </div>
         <Link
           href="/settings"
           className="w-10 h-10 flex items-center justify-center rounded-full transition-colors"
-          style={{ backgroundColor: "#111118", color: "#7A7A8E" }}
+          style={{ backgroundColor: "#1A1A28", color: "#A0A0B8" }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
@@ -41,8 +41,8 @@ export default function Home() {
           <div
             className="rounded-3xl p-6 relative overflow-hidden"
             style={{
-              background: "linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(236,72,153,0.1) 50%, rgba(139,92,246,0.05) 100%)",
-              border: "1px solid rgba(139, 92, 246, 0.15)"
+              background: "linear-gradient(135deg, rgba(139,92,246,0.18) 0%, rgba(236,72,153,0.12) 50%, rgba(139,92,246,0.08) 100%)",
+              border: "1px solid rgba(139, 92, 246, 0.28)"
             }}
           >
             {/* 배경 글로우 */}
@@ -55,7 +55,7 @@ export default function Home() {
                 이번 주 추천
               </p>
               <h2 className="text-xl font-bold mb-2">Dark Ambient</h2>
-              <p className="text-sm leading-relaxed" style={{ color: "#7A7A8E" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "#A0A0B8" }}>
                 +18% 성장 중. Melancholic + Cinematic 무드.
                 <br />진입 난이도 낮고, 기능성 음악 시장에서 강세.
               </p>
@@ -70,7 +70,7 @@ export default function Home() {
 
         {/* 트렌드 리스트 */}
         <section>
-          <h3 className="text-xs uppercase tracking-widest mb-4" style={{ color: "#4A4A5E" }}>
+          <h3 className="text-xs uppercase tracking-widest mb-4" style={{ color: "#6E6E88" }}>
             장르 트렌드
           </h3>
 
@@ -97,7 +97,7 @@ export default function Home() {
                         className="text-xs font-bold px-2 py-0.5 rounded-full"
                         style={{
                           backgroundColor: isPositive ? "rgba(52, 211, 153, 0.1)" : "rgba(122, 122, 142, 0.1)",
-                          color: isPositive ? "#34D399" : "#7A7A8E"
+                          color: isPositive ? "#34D399" : "#A0A0B8"
                         }}
                       >
                         {isPositive ? "+" : ""}{trend.growth}%
@@ -106,7 +106,7 @@ export default function Home() {
                   </div>
 
                   {/* 트렌드 바 */}
-                  <div className="h-[3px] rounded-full mb-3" style={{ backgroundColor: "rgba(30, 30, 46, 0.5)" }}>
+                  <div className="h-[3px] rounded-full mb-3" style={{ backgroundColor: "#2A2A3E" }}>
                     <div
                       className="h-full rounded-full trend-bar"
                       style={{
@@ -124,7 +124,7 @@ export default function Home() {
                         return <span key={m} className="mood-chip">{m}</span>;
                       })}
                     </div>
-                    <span className="text-[11px]" style={{ color: "#4A4A5E" }}>
+                    <span className="text-[11px]" style={{ color: "#6E6E88" }}>
                       {trend.listeners} listeners
                     </span>
                   </div>

@@ -183,13 +183,14 @@ var VOCAL_PROMPT_MAP: Record<string, string> = {
 
 // ===== 감성 프로덕션 프롬프트 생성 =====
 // 태그 나열이 아닌, 감정과 장면이 담긴 음악적 서사로 프롬프트를 작성
+// 반환 타입: 수노용 간결 프롬프트 + 프로덕션 노트(기존 형식)
 export function generateStylePrompt(params: {
   genre: string;
   moods: string[];
   bpm: number;
   vocal: string;
   instruments: string[];
-}): string {
+}): { sunoPrompt: string; productionNote: string } {
   var genreLower = params.genre.toLowerCase();
 
   // 장르 사운드 DNA
@@ -325,11 +326,13 @@ export function generateStylePrompt(params: {
     "haunting": "ghostly reverb, distant echoes, fragile melody, cold atmosphere, hollow spaces"
   };
 
-  var textureStr = "balanced mix, clear space, dynamic range";
+  // 버그 수정: 마지막 무드만 반영되던 문제 → 모든 무드의 텍스처 합치기
+  var textureArr: string[] = [];
   params.moods.forEach(function(m) {
     var t = textureMap[m.toLowerCase()];
-    if (t) textureStr = t;
+    if (t) textureArr.push(t);
   });
+  var textureStr = textureArr.length > 0 ? textureArr.join(", ") : "balanced mix, clear space, dynamic range";
 
   // ===== Era Lock — 시대별 프로덕션 로직 =====
   var eraMap: Record<string, string> = {
@@ -515,7 +518,44 @@ export function generateStylePrompt(params: {
     lines.push("[VOCAL_PROFILE: instrumental, no vocals]");
   }
 
-  return lines.join("\n");
+  var productionNote = lines.join("\n");
+
+  // ===== 수노용 간결 프롬프트 조립 (200자 내외, 쉼표 구분 자연어 태그) =====
+  // 장르 태그
+  var sunoTags: string[] = [];
+  sunoTags.push(params.genre.toLowerCase());
+
+  // BPM
+  sunoTags.push(params.bpm + " bpm");
+
+  // 핵심 악기 (최대 3개)
+  var instItems = instStr ? instStr.split(", ").slice(0, 3) : [];
+  instItems.forEach(function(inst) { sunoTags.push(inst.trim()); });
+
+  // 보컬 짧은 태그
+  var vocalTag = VOCAL_SHORT_TAG[params.vocal] || "";
+  if (vocalTag && vocalTag !== "instrumental") sunoTags.push(vocalTag);
+  if (params.vocal === "Instrumental (No Vocals)") sunoTags.push("instrumental");
+
+  // 무드 형용사 (최대 3개)
+  var moodAdj: string[] = params.moods.slice(0, 3).map(function(m) { return m.toLowerCase(); });
+  moodAdj.forEach(function(m) { sunoTags.push(m); });
+
+  // 중복 제거
+  var seen: Record<string, boolean> = {};
+  var dedupedTags: string[] = [];
+  sunoTags.forEach(function(tag) {
+    if (!seen[tag]) { seen[tag] = true; dedupedTags.push(tag); }
+  });
+
+  // 200자 제한으로 자르기
+  var sunoPrompt = "";
+  dedupedTags.forEach(function(tag) {
+    var candidate = sunoPrompt ? sunoPrompt + ", " + tag : tag;
+    if (candidate.length <= 200) sunoPrompt = candidate;
+  });
+
+  return { sunoPrompt: sunoPrompt, productionNote: productionNote };
 }
 
 // 장르별 핵심 악기 (사용자 미선택 시 폴백, 2-3개만)

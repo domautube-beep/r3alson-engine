@@ -170,6 +170,8 @@ export default function CreatePage() {
   var [selectedHook, setSelectedHook] = useState<HookPattern | null>(null);
   var [generatedLyrics, setGeneratedLyrics] = useState("");
   var [generatedPrompt, setGeneratedPrompt] = useState("");
+  var [generatedProductionNote, setGeneratedProductionNote] = useState("");
+  var [productionNoteOpen, setProductionNoteOpen] = useState(false);
   var [generatedTitle, setGeneratedTitle] = useState("");
   var [generatedTags, setGeneratedTags] = useState("");
   var [isGenerating, setIsGenerating] = useState(false);
@@ -485,7 +487,7 @@ export default function CreatePage() {
         var trackData = await trackRes.json();
         tracks.push({
           title: trackTitle,
-          prompt: trackData.prompt || "",
+          prompt: trackData.sunoPrompt || trackData.prompt || "",
           lyrics: i === 0 ? generatedLyrics : (trackData.lyrics || "(가사 생성 실패)"),
           variation: v.label + " — " + v.desc
         });
@@ -566,7 +568,11 @@ export default function CreatePage() {
       });
 
       var data = await res.json();
-      setGeneratedPrompt(data.prompt || "");
+      // sunoPrompt: 수노에 바로 붙여넣는 간결 태그
+      // productionNote: 프로듀서 참고용 상세 메타데이터
+      setGeneratedPrompt(data.sunoPrompt || data.prompt || "");
+      setGeneratedProductionNote(data.productionNote || "");
+      setProductionNoteOpen(false);
       setGeneratedLyrics(data.lyrics || "");
       setGeneratedTitle(data.title || "");
       setGeneratedTags(data.tags || "");
@@ -599,7 +605,7 @@ export default function CreatePage() {
         <button
           onClick={function() { if (step > 1) { goBack(); } else { window.location.href = "/"; } }}
           className="mr-4 w-10 h-10 flex items-center justify-center rounded-full"
-          style={{ backgroundColor: "#111118", color: "#7A7A8E" }}
+          style={{ backgroundColor: "#1A1A28", color: "#A0A0B8" }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
@@ -607,7 +613,7 @@ export default function CreatePage() {
           <h1 className="text-lg font-bold">새 곡 만들기</h1>
           <div className="flex items-center gap-2 mt-1">
             {[1,2,3,4,5].map(function(s) {
-              return <div key={s} className="h-1 flex-1 rounded-full transition-all duration-500" style={{ background: s <= step ? "linear-gradient(90deg, #8B5CF6, #EC4899)" : "#1E1E2E" }} />;
+              return <div key={s} className="h-1 flex-1 rounded-full transition-all duration-500" style={{ background: s <= step ? "linear-gradient(90deg, #8B5CF6, #EC4899)" : "#2A2A3E" }} />;
             })}
           </div>
         </div>
@@ -619,7 +625,7 @@ export default function CreatePage() {
         {step === 1 && (
           <div className="space-y-4">
             <h2 className="text-xl font-bold mb-2">어떻게 만들까요?</h2>
-            <p className="text-sm mb-6" style={{ color: "#9CA3AF" }}>
+            <p className="text-sm mb-6" style={{ color: "#A0A0B8" }}>
               당신의 스타일에 맞는 방식을 선택하세요
             </p>
 
@@ -635,10 +641,10 @@ export default function CreatePage() {
                 </div>
                 <div>
                   <span className="font-bold text-[15px] block">트렌드 모드</span>
-                  <span className="text-xs" style={{ color: "#7A7A8E" }}>가장 높은 스트리밍 확률</span>
+                  <span className="text-xs" style={{ color: "#A0A0B8" }}>가장 높은 스트리밍 확률</span>
                 </div>
               </div>
-              <p className="text-sm leading-relaxed" style={{ color: "#7A7A8E" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "#A0A0B8" }}>
                 데이터가 추천하는 장르/무드로 자동 세팅.
               </p>
             </button>
@@ -655,10 +661,10 @@ export default function CreatePage() {
                 </div>
                 <div>
                   <span className="font-bold text-[15px] block">자유 모드</span>
-                  <span className="text-xs" style={{ color: "#7A7A8E" }}>내 감성 100%</span>
+                  <span className="text-xs" style={{ color: "#A0A0B8" }}>내 감성 100%</span>
                 </div>
               </div>
-              <p className="text-sm leading-relaxed" style={{ color: "#7A7A8E" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "#A0A0B8" }}>
                 내가 선택하고, 데이터는 참고만.
               </p>
             </button>
@@ -688,10 +694,10 @@ export default function CreatePage() {
                 </div>
                 <div>
                   <span className="font-bold text-[15px] block">하이브리드 모드</span>
-                  <span className="text-xs" style={{ color: "#7A7A8E" }}>확률 + 개성 둘 다</span>
+                  <span className="text-xs" style={{ color: "#A0A0B8" }}>확률 + 개성 둘 다</span>
                 </div>
               </div>
-              <p className="text-sm leading-relaxed" style={{ color: "#7A7A8E" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "#A0A0B8" }}>
                 데이터가 제안하고, 내가 터치를 더한다.
               </p>
             </button>
@@ -702,7 +708,7 @@ export default function CreatePage() {
         {step === 2 && (
           <div className="space-y-6">
             <h2 className="text-xl font-bold">곡 설정</h2>
-            <p className="text-sm" style={{ color: "#7A7A8E" }}>
+            <p className="text-sm" style={{ color: "#A0A0B8" }}>
               {mode === "trend" ? "트렌드 기반으로 세팅됨. 수정도 가능해요." :
                mode === "hybrid" ? "데이터 제안 + 자유롭게 수정하세요." :
                "순서대로 선택하세요. 각 단계를 완료하면 다음이 열려요."}
@@ -712,7 +718,7 @@ export default function CreatePage() {
             <div className="glass-card overflow-hidden fade-in">
               {/* 헤더 */}
               <div className="flex items-center gap-2 p-4 pb-3">
-                <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: genre ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#1E1E2E", color: genre ? "white" : "#7A7A8E" }}>1</div>
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: genre ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#2A2A3E", color: genre ? "white" : "#A0A0B8" }}>1</div>
                 <label className="text-sm font-semibold">장르</label>
                 {genre && <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(52, 211, 153, 0.1)", color: "#34D399" }}>{genre}</span>}
               </div>
@@ -749,7 +755,7 @@ export default function CreatePage() {
 
               {/* 소분류 장르 칩 (보라색 계열) */}
               <div className="px-4 pb-4">
-                <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>
+                <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#6E6E88" }}>
                   {genreCategory || "전체"} — 장르 선택
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -768,7 +774,7 @@ export default function CreatePage() {
                   })}
                 </div>
                 {genre && getCurrentTrendInfo() && (
-                  <p className="text-xs mt-2" style={{ color: getCurrentTrendInfo()!.growth > 0 ? "#34D399" : "#7A7A8E" }}>
+                  <p className="text-xs mt-2" style={{ color: getCurrentTrendInfo()!.growth > 0 ? "#34D399" : "#A0A0B8" }}>
                     {getCurrentTrendInfo()!.growth > 0 ? "이 장르는 현재 성장 중" : "트렌드와 다른 선택도 차별화 전략이 될 수 있어요"}
                   </p>
                 )}
@@ -779,16 +785,16 @@ export default function CreatePage() {
             {!genre ? (
               <div className="glass-card p-4" style={{ opacity: 0.3 }}>
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#1E1E2E", color: "#4A4A5E" }}>2</div>
-                  <label className="text-sm" style={{ color: "#4A4A5E" }}>무드 — 장르를 먼저 선택하세요</label>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#2A2A3E", color: "#6E6E88" }}>2</div>
+                  <label className="text-sm" style={{ color: "#6E6E88" }}>무드 — 장르를 먼저 선택하세요</label>
                 </div>
               </div>
             ) : (
               <div className="glass-card overflow-hidden fade-in">
                 {/* 헤더 */}
                 <div className="flex items-center gap-2 p-4 pb-3">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: selectedMoods.length > 0 ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#1E1E2E", color: selectedMoods.length > 0 ? "white" : "#7A7A8E" }}>2</div>
-                  <label className="text-sm font-semibold">무드 <span style={{ color: "#7A7A8E" }}>(여러 개)</span></label>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: selectedMoods.length > 0 ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#2A2A3E", color: selectedMoods.length > 0 ? "white" : "#A0A0B8" }}>2</div>
+                  <label className="text-sm font-semibold">무드 <span style={{ color: "#A0A0B8" }}>(여러 개)</span></label>
                 </div>
 
                 {/* 대분류 탭 (핑크 — 가로 스크롤) */}
@@ -836,7 +842,7 @@ export default function CreatePage() {
                       var rest = ALL_MOODS.filter(function(m) { return recommended.indexOf(m) === -1; });
                       return recommended.concat(["__DIVIDER__"]).concat(rest);
                     })()).map(function(m) {
-                      if (m === "__DIVIDER__") return <span key="div" className="w-full text-[10px] uppercase tracking-widest mt-3 mb-1" style={{ color: "#4A4A5E" }}>기타</span>;
+                      if (m === "__DIVIDER__") return <span key="div" className="w-full text-[10px] uppercase tracking-widest mt-3 mb-1" style={{ color: "#6E6E88" }}>기타</span>;
                       var isSelected = selectedMoods.includes(m);
                       var rec = genre ? getRecommendations(genre) : null;
                       var isRecommended = rec && rec.moods.indexOf(m) !== -1;
@@ -857,14 +863,14 @@ export default function CreatePage() {
             {selectedMoods.length === 0 ? (
               <div className="glass-card p-4" style={{ opacity: 0.3 }}>
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#1E1E2E", color: "#4A4A5E" }}>3</div>
-                  <label className="text-sm" style={{ color: "#4A4A5E" }}>보컬 — 무드를 먼저 선택하세요</label>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#2A2A3E", color: "#6E6E88" }}>3</div>
+                  <label className="text-sm" style={{ color: "#6E6E88" }}>보컬 — 무드를 먼저 선택하세요</label>
                 </div>
               </div>
             ) : (
               <div className="glass-card p-4 fade-in">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: selectedVocal ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#1E1E2E", color: selectedVocal ? "white" : "#7A7A8E" }}>3</div>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: selectedVocal ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#2A2A3E", color: selectedVocal ? "white" : "#A0A0B8" }}>3</div>
                   <label className="text-sm font-semibold">보컬 스타일</label>
                   {selectedVocal && <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(52, 211, 153, 0.1)", color: "#34D399" }}>{selectedVocal}</span>}
                 </div>
@@ -880,11 +886,11 @@ export default function CreatePage() {
                     </div>
                   </div>
                 )}
-                <p className="text-[10px] uppercase tracking-widest mb-1.5 mt-2" style={{ color: "#4A4A5E" }}>전체</p>
+                <p className="text-[10px] uppercase tracking-widest mb-1.5 mt-2" style={{ color: "#6E6E88" }}>전체</p>
                 {Object.entries(VOCAL_STYLES).map(function([cat, vocals]) {
                   return (
                     <div key={cat} className="mb-3">
-                      <p className="text-xs mb-1.5" style={{ color: "#7A7A8E" }}>{cat}</p>
+                      <p className="text-xs mb-1.5" style={{ color: "#A0A0B8" }}>{cat}</p>
                       <div className="flex flex-wrap gap-2">
                         {vocals.map(function(v) {
                           var isSelected = selectedVocal === v;
@@ -901,15 +907,15 @@ export default function CreatePage() {
             {!selectedVocal ? (
               <div className="glass-card p-4" style={{ opacity: 0.3 }}>
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#1E1E2E", color: "#4A4A5E" }}>4</div>
-                  <label className="text-sm" style={{ color: "#4A4A5E" }}>악기 — 보컬을 먼저 선택하세요</label>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#2A2A3E", color: "#6E6E88" }}>4</div>
+                  <label className="text-sm" style={{ color: "#6E6E88" }}>악기 — 보컬을 먼저 선택하세요</label>
                 </div>
               </div>
             ) : (
               <div className="glass-card p-4 fade-in">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: selectedInstruments.length > 0 ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#1E1E2E", color: selectedInstruments.length > 0 ? "white" : "#7A7A8E" }}>4</div>
-                  <label className="text-sm font-semibold">악기 <span style={{ color: "#7A7A8E" }}>(여러 개, 선택 안 하면 자동)</span></label>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: selectedInstruments.length > 0 ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#2A2A3E", color: selectedInstruments.length > 0 ? "white" : "#A0A0B8" }}>4</div>
+                  <label className="text-sm font-semibold">악기 <span style={{ color: "#A0A0B8" }}>(여러 개, 선택 안 하면 자동)</span></label>
                 </div>
                 {/* 추천 악기 먼저 */}
                 {genre && getRecommendations(genre) && (
@@ -923,11 +929,11 @@ export default function CreatePage() {
                     </div>
                   </div>
                 )}
-                <p className="text-[10px] uppercase tracking-widest mb-1.5 mt-2" style={{ color: "#4A4A5E" }}>전체</p>
+                <p className="text-[10px] uppercase tracking-widest mb-1.5 mt-2" style={{ color: "#6E6E88" }}>전체</p>
                 {Object.entries(INSTRUMENT_CATEGORIES).map(function([cat, instruments]) {
                   return (
                     <div key={cat} className="mb-3">
-                      <p className="text-xs mb-1.5" style={{ color: "#7A7A8E" }}>{cat}</p>
+                      <p className="text-xs mb-1.5" style={{ color: "#A0A0B8" }}>{cat}</p>
                       <div className="flex flex-wrap gap-2">
                         {instruments.map(function(inst) {
                           var isSelected = selectedInstruments.includes(inst);
@@ -945,8 +951,8 @@ export default function CreatePage() {
             {!selectedVocal ? (
               <div className="glass-card p-4" style={{ opacity: 0.3 }}>
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#1E1E2E", color: "#4A4A5E" }}>5</div>
-                  <label className="text-sm" style={{ color: "#4A4A5E" }}>BPM</label>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#2A2A3E", color: "#6E6E88" }}>5</div>
+                  <label className="text-sm" style={{ color: "#6E6E88" }}>BPM</label>
                 </div>
               </div>
             ) : (
@@ -956,7 +962,7 @@ export default function CreatePage() {
                   <label className="text-sm font-semibold">BPM: <span className="text-gradient font-bold">{bpm}</span></label>
                 </div>
                 <input type="range" min="50" max="180" value={bpm} onChange={function(e) { setBpm(parseInt(e.target.value)); }} className="w-full" />
-                <div className="flex justify-between text-xs" style={{ color: "#7A7A8E" }}>
+                <div className="flex justify-between text-xs" style={{ color: "#A0A0B8" }}>
                   <span>50 (느림)</span>
                   <span>{genre && getCurrentTrendInfo() ? "적정: " + getCurrentTrendInfo()!.avgBpm : "115 (보통)"}</span>
                   <span>180 (빠름)</span>
@@ -979,7 +985,7 @@ export default function CreatePage() {
         {step === 3 && (
           <div className="space-y-6">
             <h2 className="text-xl font-bold">가사</h2>
-            <p className="text-sm" style={{ color: "#9CA3AF" }}>
+            <p className="text-sm" style={{ color: "#A0A0B8" }}>
               가사 방식을 선택하세요. 나중에 수정할 수 있어요.
             </p>
 
@@ -998,8 +1004,8 @@ export default function CreatePage() {
                       onClick={function() { setLanguage(opt.id); }}
                       className={"flex-1 py-2.5 rounded-xl text-sm font-medium transition-all " + (language === opt.id ? "text-white" : "")}
                       style={{
-                        backgroundColor: language === opt.id ? "#8B5CF6" : "#111118",
-                        color: language === opt.id ? "white" : "#7A7A8E"
+                        backgroundColor: language === opt.id ? "#8B5CF6" : "#1A1A28",
+                        color: language === opt.id ? "white" : "#A0A0B8"
                       }}
                     >
                       {opt.label}
@@ -1024,8 +1030,8 @@ export default function CreatePage() {
                       onClick={function() { setSectionLength(opt.id); }}
                       className={"flex-1 py-2.5 rounded-xl text-center transition-all"}
                       style={{
-                        backgroundColor: sectionLength === opt.id ? "#8B5CF6" : "#111118",
-                        color: sectionLength === opt.id ? "white" : "#7A7A8E"
+                        backgroundColor: sectionLength === opt.id ? "#8B5CF6" : "#1A1A28",
+                        color: sectionLength === opt.id ? "white" : "#A0A0B8"
                       }}
                     >
                       <span className="text-sm font-medium block">{opt.label}</span>
@@ -1052,7 +1058,7 @@ export default function CreatePage() {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-bold" style={{ color: "#FBBF24" }}>API 키를 연결하세요</p>
-                    <p className="text-xs mt-0.5" style={{ color: "#9CA3AF" }}>지금은 데모 가사만 나옵니다. 연결하면 AI가 매번 새 가사를 생성합니다.</p>
+                    <p className="text-xs mt-0.5" style={{ color: "#A0A0B8" }}>지금은 데모 가사만 나옵니다. 연결하면 AI가 매번 새 가사를 생성합니다.</p>
                   </div>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
                 </div>
@@ -1073,8 +1079,8 @@ export default function CreatePage() {
                     onClick={function () { setLyricsMode(opt.id); }}
                     className="w-full text-left p-4 rounded-xl border transition-all"
                     style={{
-                      backgroundColor: lyricsMode === opt.id ? "rgba(139, 92, 246, 0.1)" : "#1A1A2E",
-                      borderColor: lyricsMode === opt.id ? "#8B5CF6" : "#2A2A4A"
+                      backgroundColor: lyricsMode === opt.id ? "rgba(139, 92, 246, 0.1)" : "#1A1A28",
+                      borderColor: lyricsMode === opt.id ? "#8B5CF6" : "#2A2A3E"
                     }}
                   >
                     <div className="flex items-center gap-3">
@@ -1088,7 +1094,7 @@ export default function CreatePage() {
                       </div>
                       <div>
                         <p className="font-semibold text-sm">{opt.label}</p>
-                        <p className="text-xs" style={{ color: "#9CA3AF" }}>{opt.desc}</p>
+                        <p className="text-xs" style={{ color: "#A0A0B8" }}>{opt.desc}</p>
                       </div>
                     </div>
                   </button>
@@ -1112,7 +1118,7 @@ export default function CreatePage() {
                       </div>
                       <div>
                         <p className="font-semibold text-sm">주제 추천받기</p>
-                        <p className="text-xs" style={{ color: "#7A7A8E" }}>주제 + 작법 + 소재 + 훅을 조합해서 가사 방향을 잡아보세요</p>
+                        <p className="text-xs" style={{ color: "#A0A0B8" }}>주제 + 작법 + 소재 + 훅을 조합해서 가사 방향을 잡아보세요</p>
                       </div>
                     </div>
                   </button>
@@ -1125,21 +1131,21 @@ export default function CreatePage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         {topicStep > 1 && (
-                          <button onClick={function() { setTopicStep(topicStep - 1); }} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#111118" }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7A7A8E" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                          <button onClick={function() { setTopicStep(topicStep - 1); }} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#1A1A28" }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A0A0B8" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                           </button>
                         )}
                         <span className="text-sm font-bold">
                           {topicStep === 1 ? "1. 주제 선택" : topicStep === 2 ? "2. 세부 주제" : topicStep === 3 ? "3. 작법 선택" : "4. 소재 & 훅 선택"}
                         </span>
                       </div>
-                      <button onClick={function() { setShowTopicPicker(false); }} className="text-xs px-2 py-1 rounded-lg" style={{ color: "#7A7A8E", backgroundColor: "#111118" }}>닫기</button>
+                      <button onClick={function() { setShowTopicPicker(false); }} className="text-xs px-2 py-1 rounded-lg" style={{ color: "#A0A0B8", backgroundColor: "#1A1A28" }}>닫기</button>
                     </div>
 
                     {/* 진행 바 */}
                     <div className="flex gap-1">
                       {[1,2,3,4].map(function(s) {
-                        return <div key={s} className="h-1 flex-1 rounded-full" style={{ background: s <= topicStep ? "linear-gradient(90deg, #8B5CF6, #EC4899)" : "#1E1E2E" }} />;
+                        return <div key={s} className="h-1 flex-1 rounded-full" style={{ background: s <= topicStep ? "linear-gradient(90deg, #8B5CF6, #EC4899)" : "#2A2A3E" }} />;
                       })}
                     </div>
 
@@ -1152,7 +1158,7 @@ export default function CreatePage() {
                               key={cat.id}
                               onClick={function() { setSelectedCategory(cat.id); setTopicStep(2); }}
                               className="p-3 rounded-xl text-left transition-all"
-                              style={{ backgroundColor: "#111118", border: "1px solid #1E1E2E" }}
+                              style={{ backgroundColor: "#1A1A28", border: "1px solid #2A2A3E" }}
                             >
                               <span className="text-lg block mb-1">{cat.emoji}</span>
                               <span className="text-sm font-semibold block">{cat.label}</span>
@@ -1172,7 +1178,7 @@ export default function CreatePage() {
                                 key={st.id}
                                 onClick={function() { setSelectedSubTheme(st); setTopicStep(3); }}
                                 className="w-full p-3 rounded-xl text-left transition-all"
-                                style={{ backgroundColor: "#111118", border: "1px solid #1E1E2E" }}
+                                style={{ backgroundColor: "#1A1A28", border: "1px solid #2A2A3E" }}
                               >
                                 <span className="text-sm font-semibold">{st.label}</span>
                                 <div className="flex gap-1 mt-1.5">
@@ -1186,8 +1192,8 @@ export default function CreatePage() {
                         })}
                         {/* 연관 추천 */}
                         {selectedSubTheme && (
-                          <div className="pt-2 border-t" style={{ borderColor: "#1E1E2E" }}>
-                            <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>연관 추천</p>
+                          <div className="pt-2 border-t" style={{ borderColor: "#2A2A3E" }}>
+                            <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#6E6E88" }}>연관 추천</p>
                             <div className="flex gap-1.5 flex-wrap">
                               {getRelatedSubThemes(selectedSubTheme, genre).map(function(rst) {
                                 return (
@@ -1233,8 +1239,8 @@ export default function CreatePage() {
                               }}
                               className="w-full p-3 rounded-xl text-left transition-all"
                               style={{
-                                backgroundColor: "#111118",
-                                border: "1px solid " + (isRelevant ? "rgba(139,92,246,0.3)" : "#1E1E2E"),
+                                backgroundColor: "#1A1A28",
+                                border: "1px solid " + (isRelevant ? "rgba(139,92,246,0.3)" : "#2A2A3E"),
                                 opacity: isRelevant ? 1 : 0.5
                               }}
                             >
@@ -1242,7 +1248,7 @@ export default function CreatePage() {
                                 <span className="text-sm font-semibold">{tech.label}</span>
                                 {isRelevant && <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(139,92,246,0.15)", color: "#8B5CF6" }}>추천</span>}
                               </div>
-                              <p className="text-xs mt-1" style={{ color: "#7A7A8E" }}>{tech.desc}</p>
+                              <p className="text-xs mt-1" style={{ color: "#A0A0B8" }}>{tech.desc}</p>
                             </button>
                           );
                         })}
@@ -1277,12 +1283,12 @@ export default function CreatePage() {
 
                         {/* 사물 */}
                         <div>
-                          <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>사물/이미지 (탭하여 선택)</p>
+                          <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#6E6E88" }}>사물/이미지 (탭하여 선택)</p>
                           <div className="flex flex-wrap gap-1.5">
                             {recommendation.objects.map(function(obj) {
                               var picked = pickedObjects.indexOf(obj) !== -1;
                               return (
-                                <button key={obj} onClick={function() { setPickedObjects(picked ? pickedObjects.filter(function(o) { return o !== obj; }) : pickedObjects.concat([obj])); }} className="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" style={{ backgroundColor: picked ? "rgba(139,92,246,0.2)" : "#111118", color: picked ? "#A78BFA" : "#7A7A8E", border: "1px solid " + (picked ? "#8B5CF6" : "#1E1E2E") }}>
+                                <button key={obj} onClick={function() { setPickedObjects(picked ? pickedObjects.filter(function(o) { return o !== obj; }) : pickedObjects.concat([obj])); }} className="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" style={{ backgroundColor: picked ? "rgba(139,92,246,0.2)" : "#1A1A28", color: picked ? "#A78BFA" : "#A0A0B8", border: "1px solid " + (picked ? "#8B5CF6" : "#2A2A3E") }}>
                                   {obj}
                                 </button>
                               );
@@ -1292,12 +1298,12 @@ export default function CreatePage() {
 
                         {/* 장소 */}
                         <div>
-                          <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>장소</p>
+                          <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#6E6E88" }}>장소</p>
                           <div className="flex flex-wrap gap-1.5">
                             {recommendation.places.map(function(pl) {
                               var picked = pickedPlaces.indexOf(pl) !== -1;
                               return (
-                                <button key={pl} onClick={function() { setPickedPlaces(picked ? pickedPlaces.filter(function(p) { return p !== pl; }) : pickedPlaces.concat([pl])); }} className="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" style={{ backgroundColor: picked ? "rgba(236,72,153,0.2)" : "#111118", color: picked ? "#EC4899" : "#7A7A8E", border: "1px solid " + (picked ? "#EC4899" : "#1E1E2E") }}>
+                                <button key={pl} onClick={function() { setPickedPlaces(picked ? pickedPlaces.filter(function(p) { return p !== pl; }) : pickedPlaces.concat([pl])); }} className="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" style={{ backgroundColor: picked ? "rgba(236,72,153,0.2)" : "#1A1A28", color: picked ? "#EC4899" : "#A0A0B8", border: "1px solid " + (picked ? "#EC4899" : "#2A2A3E") }}>
                                   {pl}
                                 </button>
                               );
@@ -1308,12 +1314,12 @@ export default function CreatePage() {
                         {/* 시간 + 동작 + 소리 (한 줄씩) */}
                         <div className="grid grid-cols-3 gap-3">
                           <div>
-                            <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>시간</p>
+                            <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#6E6E88" }}>시간</p>
                             <div className="space-y-1">
                               {recommendation.times.map(function(t) {
                                 var picked = pickedTimes.indexOf(t) !== -1;
                                 return (
-                                  <button key={t} onClick={function() { setPickedTimes(picked ? pickedTimes.filter(function(x) { return x !== t; }) : pickedTimes.concat([t])); }} className="w-full px-2 py-1.5 rounded-lg text-[11px] text-left transition-all" style={{ backgroundColor: picked ? "rgba(52,211,153,0.15)" : "#111118", color: picked ? "#34D399" : "#7A7A8E", border: "1px solid " + (picked ? "rgba(52,211,153,0.3)" : "#1E1E2E") }}>
+                                  <button key={t} onClick={function() { setPickedTimes(picked ? pickedTimes.filter(function(x) { return x !== t; }) : pickedTimes.concat([t])); }} className="w-full px-2 py-1.5 rounded-lg text-[11px] text-left transition-all" style={{ backgroundColor: picked ? "rgba(52,211,153,0.15)" : "#1A1A28", color: picked ? "#34D399" : "#A0A0B8", border: "1px solid " + (picked ? "rgba(52,211,153,0.3)" : "#2A2A3E") }}>
                                     {t}
                                   </button>
                                 );
@@ -1321,12 +1327,12 @@ export default function CreatePage() {
                             </div>
                           </div>
                           <div>
-                            <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>동작</p>
+                            <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#6E6E88" }}>동작</p>
                             <div className="space-y-1">
                               {recommendation.actions.slice(0, 3).map(function(a) {
                                 var picked = pickedActions.indexOf(a) !== -1;
                                 return (
-                                  <button key={a} onClick={function() { setPickedActions(picked ? pickedActions.filter(function(x) { return x !== a; }) : pickedActions.concat([a])); }} className="w-full px-2 py-1.5 rounded-lg text-[11px] text-left transition-all" style={{ backgroundColor: picked ? "rgba(251,191,36,0.15)" : "#111118", color: picked ? "#FBBF24" : "#7A7A8E", border: "1px solid " + (picked ? "rgba(251,191,36,0.3)" : "#1E1E2E") }}>
+                                  <button key={a} onClick={function() { setPickedActions(picked ? pickedActions.filter(function(x) { return x !== a; }) : pickedActions.concat([a])); }} className="w-full px-2 py-1.5 rounded-lg text-[11px] text-left transition-all" style={{ backgroundColor: picked ? "rgba(251,191,36,0.15)" : "#1A1A28", color: picked ? "#FBBF24" : "#A0A0B8", border: "1px solid " + (picked ? "rgba(251,191,36,0.3)" : "#2A2A3E") }}>
                                     {a}
                                   </button>
                                 );
@@ -1334,12 +1340,12 @@ export default function CreatePage() {
                             </div>
                           </div>
                           <div>
-                            <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>소리</p>
+                            <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#6E6E88" }}>소리</p>
                             <div className="space-y-1">
                               {recommendation.sounds.map(function(s) {
                                 var picked = pickedSounds.indexOf(s) !== -1;
                                 return (
-                                  <button key={s} onClick={function() { setPickedSounds(picked ? pickedSounds.filter(function(x) { return x !== s; }) : pickedSounds.concat([s])); }} className="w-full px-2 py-1.5 rounded-lg text-[11px] text-left transition-all" style={{ backgroundColor: picked ? "rgba(96,165,250,0.15)" : "#111118", color: picked ? "#60A5FA" : "#7A7A8E", border: "1px solid " + (picked ? "rgba(96,165,250,0.3)" : "#1E1E2E") }}>
+                                  <button key={s} onClick={function() { setPickedSounds(picked ? pickedSounds.filter(function(x) { return x !== s; }) : pickedSounds.concat([s])); }} className="w-full px-2 py-1.5 rounded-lg text-[11px] text-left transition-all" style={{ backgroundColor: picked ? "rgba(96,165,250,0.15)" : "#1A1A28", color: picked ? "#60A5FA" : "#A0A0B8", border: "1px solid " + (picked ? "rgba(96,165,250,0.3)" : "#2A2A3E") }}>
                                     {s}
                                   </button>
                                 );
@@ -1350,7 +1356,7 @@ export default function CreatePage() {
 
                         {/* 감각 형용사 + 신체 */}
                         <div>
-                          <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>감각/신체</p>
+                          <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#6E6E88" }}>감각/신체</p>
                           <div className="flex flex-wrap gap-1.5">
                             {recommendation.senses.concat(recommendation.body).map(function(sb) {
                               var pickedS = pickedSenses.indexOf(sb) !== -1;
@@ -1363,7 +1369,7 @@ export default function CreatePage() {
                                   } else {
                                     setPickedBody(pickedB ? pickedBody.filter(function(x) { return x !== sb; }) : pickedBody.concat([sb]));
                                   }
-                                }} className="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" style={{ backgroundColor: isPicked ? "rgba(244,114,182,0.15)" : "#111118", color: isPicked ? "#F472B6" : "#7A7A8E", border: "1px solid " + (isPicked ? "rgba(244,114,182,0.3)" : "#1E1E2E") }}>
+                                }} className="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" style={{ backgroundColor: isPicked ? "rgba(244,114,182,0.15)" : "#1A1A28", color: isPicked ? "#F472B6" : "#A0A0B8", border: "1px solid " + (isPicked ? "rgba(244,114,182,0.3)" : "#2A2A3E") }}>
                                   {sb}
                                 </button>
                               );
@@ -1373,7 +1379,7 @@ export default function CreatePage() {
 
                         {/* 훅 구조 */}
                         <div>
-                          <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>훅 구조 패턴</p>
+                          <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#6E6E88" }}>훅 구조 패턴</p>
                           <div className="space-y-1.5">
                             {HOOK_PATTERNS.filter(function(hp) {
                               if (!selectedSubTheme) return true;
@@ -1384,9 +1390,9 @@ export default function CreatePage() {
                             }).slice(0, 4).map(function(hp) {
                               var isSelected = selectedHook && selectedHook.id === hp.id;
                               return (
-                                <button key={hp.id} onClick={function() { setSelectedHook(hp); }} className="w-full p-2.5 rounded-xl text-left transition-all" style={{ backgroundColor: isSelected ? "rgba(139,92,246,0.15)" : "#111118", border: "1px solid " + (isSelected ? "#8B5CF6" : "#1E1E2E") }}>
+                                <button key={hp.id} onClick={function() { setSelectedHook(hp); }} className="w-full p-2.5 rounded-xl text-left transition-all" style={{ backgroundColor: isSelected ? "rgba(139,92,246,0.15)" : "#1A1A28", border: "1px solid " + (isSelected ? "#8B5CF6" : "#2A2A3E") }}>
                                   <span className="text-xs font-semibold" style={{ color: isSelected ? "#A78BFA" : "#E5E5E5" }}>{hp.label}</span>
-                                  <p className="text-[11px] mt-0.5" style={{ color: "#7A7A8E" }}>{hp.structure}</p>
+                                  <p className="text-[11px] mt-0.5" style={{ color: "#A0A0B8" }}>{hp.structure}</p>
                                 </button>
                               );
                             })}
@@ -1466,7 +1472,7 @@ export default function CreatePage() {
             <div className="text-center mb-4">
               <span className="text-3xl">{"\uD83C\uDF89"}</span>
               <h2 className="text-xl font-bold mt-2">완성!</h2>
-              <p className="text-sm" style={{ color: "#7A7A8E" }}>
+              <p className="text-sm" style={{ color: "#A0A0B8" }}>
                 아래 내용을 수노에 붙여넣으세요
               </p>
               {isDemo && (
@@ -1476,10 +1482,10 @@ export default function CreatePage() {
               )}
             </div>
 
-            {/* 수노 프롬프트 */}
-            <div className="glass-card p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold">{"\uD83C\uDFB5"} 수노 프롬프트</span>
+            {/* 수노 프롬프트 — 메인 (Style of Music 필드에 바로 붙여넣기) */}
+            <div className="glass-card p-4" style={{ borderColor: "rgba(139, 92, 246, 0.4)" }}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-semibold">{"\uD83C\uDFB5"} 수노 Style of Music</span>
                 <button
                   onClick={function () { copyToClipboard(generatedPrompt, "prompt"); }}
                   className="text-xs px-3 py-1 rounded-full"
@@ -1491,12 +1497,44 @@ export default function CreatePage() {
                   {copied === "prompt" ? "복사됨!" : "복사"}
                 </button>
               </div>
+              <p className="text-xs mb-2" style={{ color: "#A0A0B8" }}>
+                수노 "Style of Music" 필드에 바로 붙여넣으세요
+              </p>
               <textarea
                 value={generatedPrompt}
                 onChange={function (e) { setGeneratedPrompt(e.target.value); }}
                 rows={3}
                 className="input-dark text-sm"
               />
+
+              {/* 프로덕션 노트 — 접히는 참고 섹션 */}
+              {generatedProductionNote && (
+                <div className="mt-3">
+                  <button
+                    onClick={function() { setProductionNoteOpen(!productionNoteOpen); }}
+                    className="flex items-center gap-2 text-xs w-full text-left py-2"
+                    style={{ color: "#A0A0B8" }}
+                  >
+                    <svg
+                      width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth="2"
+                      style={{ transform: productionNoteOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
+                    >
+                      <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                    프로덕션 노트 (참고용)
+                  </button>
+                  {productionNoteOpen && (
+                    <textarea
+                      value={generatedProductionNote}
+                      onChange={function (e) { setGeneratedProductionNote(e.target.value); }}
+                      rows={10}
+                      className="w-full p-2 rounded-lg text-xs border mt-1 font-mono"
+                      style={{ backgroundColor: "#1A1A28", borderColor: "#2A2A3E", color: "#A0A0B8" }}
+                    />
+                  )}
+                </div>
+              )}
             </div>
 
             {/* 가사 */}
@@ -1520,7 +1558,7 @@ export default function CreatePage() {
                   onChange={function (e) { setGeneratedLyrics(e.target.value); }}
                   rows={12}
                   className="w-full p-2 rounded-lg text-sm border"
-                  style={{ backgroundColor: "#0F0F23", borderColor: "#2A2A4A", color: "#E5E5E5" }}
+                  style={{ backgroundColor: "#1A1A28", borderColor: "#2A2A3E", color: "#F0F0F5" }}
                 />
               </div>
             )}
@@ -1545,23 +1583,23 @@ export default function CreatePage() {
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs" style={{ color: "#9CA3AF" }}>제목</label>
+                  <label className="text-xs" style={{ color: "#A0A0B8" }}>제목</label>
                   <input
                     type="text"
                     value={generatedTitle}
                     onChange={function (e) { setGeneratedTitle(e.target.value); }}
                     className="w-full p-2 rounded-lg text-sm border mt-1"
-                    style={{ backgroundColor: "#0F0F23", borderColor: "#2A2A4A", color: "#E5E5E5" }}
+                    style={{ backgroundColor: "#1A1A28", borderColor: "#2A2A3E", color: "#F0F0F5" }}
                   />
                 </div>
                 <div>
-                  <label className="text-xs" style={{ color: "#9CA3AF" }}>태그</label>
+                  <label className="text-xs" style={{ color: "#A0A0B8" }}>태그</label>
                   <input
                     type="text"
                     value={generatedTags}
                     onChange={function (e) { setGeneratedTags(e.target.value); }}
                     className="w-full p-2 rounded-lg text-sm border mt-1"
-                    style={{ backgroundColor: "#0F0F23", borderColor: "#2A2A4A", color: "#E5E5E5" }}
+                    style={{ backgroundColor: "#1A1A28", borderColor: "#2A2A3E", color: "#F0F0F5" }}
                   />
                 </div>
               </div>
@@ -1570,7 +1608,7 @@ export default function CreatePage() {
             {/* 다음 단계 가이드 */}
             <div className="glass-card p-4">
               <p className="text-sm font-semibold mb-3">{"\uD83D\uDCD6"} 다음 단계</p>
-              <ol className="space-y-2 text-sm" style={{ color: "#9CA3AF" }}>
+              <ol className="space-y-2 text-sm" style={{ color: "#A0A0B8" }}>
                 <li className="flex gap-2">
                   <span style={{ color: "#8B5CF6" }}>1.</span>
                   수노(suno.com)에서 프롬프트를 붙여넣고 곡 생성
@@ -1592,12 +1630,12 @@ export default function CreatePage() {
                 <span className="text-lg">{"\uD83C\uDFB6"}</span>
                 <span className="font-bold">플레이리스트로 확장</span>
               </div>
-              <p className="text-sm mb-4" style={{ color: "#7A7A8E" }}>
+              <p className="text-sm mb-4" style={{ color: "#A0A0B8" }}>
                 이 곡이 마음에 들면, 같은 감성의 배리에이션으로 플레이리스트를 만들어보세요
               </p>
 
               <div className="flex items-center gap-4 mb-4">
-                <label className="text-sm font-semibold" style={{ color: "#7A7A8E" }}>곡 수</label>
+                <label className="text-sm font-semibold" style={{ color: "#A0A0B8" }}>곡 수</label>
                 <div className="flex items-center gap-2">
                   {[3, 5, 7, 10].map(function(n) {
                     return (
@@ -1606,8 +1644,8 @@ export default function CreatePage() {
                         onClick={function() { setPlaylistCount(n); }}
                         className={"w-10 h-10 rounded-xl text-sm font-bold transition-all " + (playlistCount === n ? "text-white" : "")}
                         style={{
-                          backgroundColor: playlistCount === n ? "#8B5CF6" : "#111118",
-                          color: playlistCount === n ? "white" : "#7A7A8E"
+                          backgroundColor: playlistCount === n ? "#8B5CF6" : "#1A1A28",
+                          color: playlistCount === n ? "white" : "#A0A0B8"
                         }}
                       >
                         {n}
@@ -1615,13 +1653,13 @@ export default function CreatePage() {
                     );
                   })}
                 </div>
-                <span className="text-xs" style={{ color: "#7A7A8E" }}>{playlistCount}곡</span>
+                <span className="text-xs" style={{ color: "#A0A0B8" }}>{playlistCount}곡</span>
               </div>
 
               {isGeneratingPlaylist ? (
                 <div className="space-y-3">
                   {/* 프로그레스 바 */}
-                  <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "#1E1E2E" }}>
+                  <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "#2A2A3E" }}>
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{
@@ -1634,7 +1672,7 @@ export default function CreatePage() {
                   {/* 진행 상태 텍스트 */}
                   <div className="flex items-center justify-center gap-3 py-3">
                     <svg className="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <circle cx="12" cy="12" r="10" stroke="#2A2A4A" strokeWidth="3" />
+                      <circle cx="12" cy="12" r="10" stroke="#2A2A3E" strokeWidth="3" />
                       <path d="M12 2a10 10 0 019.95 9" stroke="#8B5CF6" strokeWidth="3" strokeLinecap="round" />
                     </svg>
                     <span className="text-sm font-semibold" style={{ color: "#8B5CF6" }}>
@@ -1643,7 +1681,7 @@ export default function CreatePage() {
                   </div>
 
                   {/* 현재 트랙 정보 */}
-                  <p className="text-center text-xs" style={{ color: "#7A7A8E" }}>
+                  <p className="text-center text-xs" style={{ color: "#A0A0B8" }}>
                     각 트랙마다 고유한 배리에이션을 만들고 있어요
                   </p>
                 </div>
@@ -1679,7 +1717,7 @@ export default function CreatePage() {
               <Link
                 href="/"
                 className="flex-1 py-3 rounded-xl text-center font-semibold"
-                style={{ backgroundColor: "#111118", color: "#7A7A8E" }}
+                style={{ backgroundColor: "#1A1A28", color: "#A0A0B8" }}
               >
                 홈으로
               </Link>
@@ -1710,7 +1748,7 @@ export default function CreatePage() {
             <div className="text-center mb-4">
               <span className="text-3xl">{"\uD83C\uDFB6"}</span>
               <h2 className="text-xl font-bold mt-2">{playlistTracks.length}곡 플레이리스트</h2>
-              <p className="text-sm" style={{ color: "#7A7A8E" }}>
+              <p className="text-sm" style={{ color: "#A0A0B8" }}>
                 원곡 기반 배리에이션 — 각 곡의 프롬프트를 수노에 붙여넣으세요
               </p>
             </div>
@@ -1730,18 +1768,18 @@ export default function CreatePage() {
                         <div
                           className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
                           style={{
-                            background: idx === 0 ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#1E1E2E",
-                            color: idx === 0 ? "white" : "#7A7A8E"
+                            background: idx === 0 ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#2A2A3E",
+                            color: idx === 0 ? "white" : "#A0A0B8"
                           }}
                         >
                           {idx + 1}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm truncate">{track.title}</p>
-                          <p className="text-xs truncate" style={{ color: "#7A7A8E" }}>{track.variation}</p>
+                          <p className="text-xs truncate" style={{ color: "#A0A0B8" }}>{track.variation}</p>
                         </div>
                         <svg
-                          width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A7A8E" strokeWidth="2"
+                          width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A0A0B8" strokeWidth="2"
                           style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
                         >
                           <path d="M6 9l6 6 6-6"/>
@@ -1755,7 +1793,7 @@ export default function CreatePage() {
                         {/* 프롬프트 */}
                         <div>
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-semibold" style={{ color: "#7A7A8E" }}>수노 프롬프트</span>
+                            <span className="text-xs font-semibold" style={{ color: "#A0A0B8" }}>수노 프롬프트</span>
                             <button
                               onClick={function() { copyToClipboard(track.prompt, "pl-p-" + idx); }}
                               className="text-[10px] px-2.5 py-1 rounded-full"
@@ -1767,7 +1805,7 @@ export default function CreatePage() {
                               {copied === "pl-p-" + idx ? "복사됨!" : "복사"}
                             </button>
                           </div>
-                          <p className="text-sm p-3 rounded-xl" style={{ backgroundColor: "#050508", color: "#9CA3AF", lineHeight: "1.6" }}>
+                          <p className="text-sm p-3 rounded-xl" style={{ backgroundColor: "#1A1A28", color: "#A0A0B8", lineHeight: "1.6" }}>
                             {track.prompt}
                           </p>
                         </div>
@@ -1776,7 +1814,7 @@ export default function CreatePage() {
                         {track.lyrics && (
                           <div>
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs font-semibold" style={{ color: "#7A7A8E" }}>가사</span>
+                              <span className="text-xs font-semibold" style={{ color: "#A0A0B8" }}>가사</span>
                               <button
                                 onClick={function() { copyToClipboard(track.lyrics, "pl-l-" + idx); }}
                                 className="text-[10px] px-2.5 py-1 rounded-full"
@@ -1788,7 +1826,7 @@ export default function CreatePage() {
                                 {copied === "pl-l-" + idx ? "복사됨!" : "복사"}
                               </button>
                             </div>
-                            <pre className="text-sm p-3 rounded-xl whitespace-pre-wrap" style={{ backgroundColor: "#050508", color: "#9CA3AF", lineHeight: "1.6" }}>
+                            <pre className="text-sm p-3 rounded-xl whitespace-pre-wrap" style={{ backgroundColor: "#1A1A28", color: "#A0A0B8", lineHeight: "1.6" }}>
                               {track.lyrics}
                             </pre>
                           </div>
@@ -1823,7 +1861,7 @@ export default function CreatePage() {
               <button
                 onClick={function() { setStep(4); }}
                 className="flex-1 py-3 rounded-xl text-center font-semibold"
-                style={{ backgroundColor: "#111118", color: "#7A7A8E" }}
+                style={{ backgroundColor: "#1A1A28", color: "#A0A0B8" }}
               >
                 원곡으로 돌아가기
               </button>
@@ -1838,7 +1876,7 @@ export default function CreatePage() {
             {/* 가이드 */}
             <div className="glass-card p-4">
               <p className="text-sm font-semibold mb-3">{"\uD83D\uDCD6"} 플레이리스트 제작 가이드</p>
-              <ol className="space-y-2 text-sm" style={{ color: "#7A7A8E" }}>
+              <ol className="space-y-2 text-sm" style={{ color: "#A0A0B8" }}>
                 <li className="flex gap-2">
                   <span style={{ color: "#8B5CF6" }}>1.</span>
                   각 트랙의 프롬프트를 수노에 하나씩 붙여넣기

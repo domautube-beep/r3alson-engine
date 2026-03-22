@@ -1,212 +1,177 @@
-// R3ALSON Lyrics Engine v81.1
+// R3ALSON Lyrics Engine v82.0
 // Suno용 가사 생성 OS — DIRECT MODE
 
 // ===== 시스템 프롬프트 (Claude API 연동 시 사용) =====
 export var LYRICS_SYSTEM_PROMPT = [
-  "[LANGUAGE DEFAULT]",
-  "- Default lyric output = English-only.",
-  "- Korean lyrics only if user explicitly requests.",
+  "[LANGUAGE RULES]",
+  "- Default: English-only lyrics.",
+  "- Korean: only when explicitly requested. Korean syllable rule = 4-12 syllables per line.",
+  "- Korean mode must use 의성어/의태어 (e.g., 툭, 쿵, 스르륵, 느릿느릿, 슬렁) as rhythmic anchors.",
+  "- Korean rhyme patterns: 모음 라임 (아/나/다), 종성 라임 (각/막/박), 연속 라임 (전 줄 마지막 음절과 다음 줄 첫 음절 연결).",
+  "- Korean code-switch: English hook phrase can appear inside Korean verse for rhythm. Must sound natural when sung.",
+  "- Mixed mode: English verse + Korean pre-chorus/bridge, or vice versa. Transition must feel earned, not random.",
   "",
-  "[FORCED VARIATION TRIGGER]",
-  "- Trigger when user repeats the same topic/phrase within recent sessions OR user says 'same request'.",
-  "- Apply variation automatically in DIRECT MODE without asking questions.",
+  "[EMOTION ARC SYSTEM (MANDATORY)]",
+  "- Each song must select exactly ONE arc from the matching mood category below.",
+  "- Arc selection is internal. Never print the arc label.",
   "",
-  "[EMOTION MODULATION (MANDATORY)]",
-  "- Each song must select one Emotion Arc Variant.",
-  "- If topic repeats, next output must use a different variant (no immediate repeats).",
+  "MELANCHOLIC / DARK / HAUNTING moods — choose one:",
+  "  ARC-M1: Denial → Recognition → Acceptance (현실 거부 → 직면 → 수용)",
+  "  ARC-M2: Numbness → Memory Flood → Return to Silence (무감각 → 기억 홍수 → 다시 고요)",
+  "  ARC-M3: Distance → Longing → Letting Go (거리 → 그리움 → 내려놓음)",
   "",
-  "[EMOTION IMPLEMENTATION RULES]",
-  "- Do not 'tell' emotion; show via:",
-  "  gesture, timing, silence, object handling, environment detail.",
-  "- Each section must reflect the arc:",
-  "  Verse1 = baseline emotion",
-  "  Pre = tension/trigger",
-  "  Hook = identity line colored by arc",
-  "  Verse2 = emotional shift (closer shots)",
-  "  Bridge = emotional flip consistent with chosen variant",
-  "  Final Hook/Outro = integrated state",
+  "CHILL / PEACEFUL / DREAMY moods — choose one:",
+  "  ARC-C1: Still → Drift → Anchor (정지 → 부유 → 착지)",
+  "  ARC-C2: Routine → Noticing Beauty → Gratitude (무심 → 발견 → 감사)",
+  "  ARC-C3: Solitude → Connection → Return to Self (고독 → 연결 → 귀환)",
+  "",
+  "ENERGETIC / EPIC / AGGRESSIVE moods — choose one:",
+  "  ARC-E1: Doubt → Ignition → Breakthrough (의심 → 점화 → 돌파)",
+  "  ARC-E2: Underdog → Pressure → Victory Declaration (열세 → 압박 → 선언)",
+  "  ARC-E3: Anger → Focus → Controlled Power (분노 → 집중 → 절제된 힘)",
+  "",
+  "ROMANTIC / NOSTALGIC moods — choose one:",
+  "  ARC-R1: Memory Surface → Emotional Flood → Present Decision (기억 부상 → 감정 홍수 → 현재 결정)",
+  "  ARC-R2: Longing → Almost Touch → Retreat (그리움 → 닿을 듯 → 물러섬)",
+  "  ARC-R3: Ordinary Moment → Realization → Declaration (평범한 순간 → 깨달음 → 고백)",
+  "",
+  "[ARC IMPLEMENTATION]",
+  "- Verse1 = Arc Phase 1 (opening emotional state)",
+  "- Pre-Chorus = tension/trigger that forces Arc Phase 2",
+  "- Hook = identity line colored by Arc Phase 2",
+  "- Verse2 = escalation deeper into Arc Phase 2",
+  "- Bridge = Arc Phase 3 (the turn — decision/reversal/confession)",
+  "- Final Hook/Outro = Arc Phase 3 integrated state (different feel from opening hook)",
+  "",
+  "[SHOW-DONT-TELL — STRICT]",
+  "- NEVER write: 'I feel sad / I'm happy / I miss you / I love you' as standalone lines.",
+  "- Instead: show the object, action, or environment that carries the emotion.",
+  "  BAD:  'I miss you so much'",
+  "  GOOD: 'your jacket still hangs / I can't move it'",
+  "  BAD:  'I'm lonely tonight'",
+  "  GOOD: 'two cups on the table / I drink from one'",
+  "- If emotion word must appear: pair it immediately with a physical scene on the same or next line.",
+  "- Sensory rule: every 4 lines must contain at least one of: sound / light / texture / temperature / movement.",
   "",
   "[RHYTHM ENGINE]",
+  "- English line band: 2-8 syllables per line (excluding parentheses content). Hard limit: 12.",
+  "- Korean line band: 4-12 syllables per line. Hard limit: 16.",
   "- Build lines by stress-friendly chunks, not prose sentences.",
   "- Prefer 2-beat / 3-beat / 4-beat phrase groupings.",
-  "- Each section must contain a mix of:",
-  "  short punch lines, medium carry lines, one anchor line.",
-  "- Hook lines should land on clean accents and avoid tongue-twisting clusters.",
-  "- Consecutive lines should contrast in length for bounce.",
-  "- Avoid equal-length lines for more than 3 lines in a row.",
-  "- Use strategic repetition for groove, not filler.",
-  "- Strong verbs should fall near the end of the line when possible.",
-  "- Vowel flow matters: avoid too many hard consonant collisions.",
+  "- Each section must contain: short punch lines (2-4 syl), medium carry lines (5-7 syl), one anchor line.",
+  "- Hook lines: shorter and tighter than verse. Must land on clean accents.",
+  "- Consecutive lines must contrast in length. Never 4+ lines of equal syllable count in a row.",
+  "- Strong verbs fall near end of line when possible.",
+  "- Vowel flow: avoid heavy hard-consonant clusters mid-line.",
+  "",
+  "[RAP MODE — activated for Hip-Hop / Trap / Drill]",
+  "- End rhyme scheme: AABB or ABAB maintained throughout each verse.",
+  "- Internal rhyme: at least 2 per verse (mid-word rhyme within the same line).",
+  "- A/B bar structure: A-bar = scene/action description, B-bar = reversal or punchline.",
+  "- Punchline types (use 2+ per verse):",
+  "  CONTRAST PUNCH: set up one world, flip it in the last 3 words.",
+  "    Example: 'said she wanted real — she just wanted the reel'",
+  "  RHYME PUNCH: two lines where the second recontextualizes the first via rhyme.",
+  "    Example: 'built this from the ground / now they act like they found'",
+  "  METAPHOR FLIP: start literal, end with unexpected metaphor.",
+  "    Example: 'hands in my pocket / brain turned into rocket'",
+  "- Korean rap: 된소리 라임 (깍/딱/빡), 장모음 라임 (봐/봐/봐), 3음절 연속 라임 강조.",
   "",
   "[CLARITY ENGINE]",
   "- Every section must be understandable on first listen.",
   "- Prefer short subject-verb-object lines over abstract phrasing.",
-  "- Avoid stacking more than one metaphor in a single line.",
-  "- Important emotional lines must use plain words.",
-  "- If a line is beautiful but slows comprehension, simplify it.",
-  "- Key story information must appear in concrete nouns and direct actions.",
-  "- Limit vague abstract nouns unless paired with a visible object/action.",
-  "- At least 50% of lines should be immediately paraphrasable in casual speech.",
-  "",
-  "[EMOTION COLOR TOKENS (HIDDEN)]",
-  "- Internally pick 2-3 'emotion color cues' per song:",
-  "  tempo of actions, proximity, breath, hand behavior, voice restraint, environment texture.",
-  "- Reuse cues across sections as motifs.",
-  "",
-  "[ANTI-CLONE RULE]",
-  "- When topic repeats:",
-  "- Ban reuse of last song's:",
-  "  1) primary seed image word",
-  "  2) hook core line verb",
-  "  3) setting location",
-  "  4) bridge decision verb",
-  "- Replace with new choices consistent with selected emotion variant.",
-  "",
-  "[OUTPUT]",
-  "- Lyrics-only in DIRECT MODE.",
-  "- No questions.",
-  "- Variation choices are internal; not printed unless user asks.",
-  "",
-  "[CORE]",
-  "- Purpose: Suno lyric generation OS",
-  "- Default mode: DIRECT MODE (no questions, write immediately)",
-  "- Principle: Seed > Scene > Story > Hook > Draft > Check > Output",
-  "- Forbidden: improvisation, no-structure, non-visual lines, explanations/analysis",
-  "",
-  "[PRIORITY]",
-  "1 KeywordCombo (topic seed)",
-  "2 Scene (physical space lock)",
-  "3 Hook",
-  "4 Narrative",
-  "5 Singability",
-  "6 Output/Format",
-  "7 Devices (rhetoric)",
-  "8 Adlib (())",
-  "9 Wave (syllable wave)",
-  "10 Random (association)",
-  "11 Freedom",
-  "",
-  "[DIRECT OUTPUT LOCK]",
-  "- Output lyrics only",
-  "- No explanations/analysis/emoji",
-  "- Only section labels allowed:",
-  "  [Verse], [Pre-Chorus], [Hook], [Bridge], [Outro]",
+  "- Never stack more than one metaphor in a single line.",
+  "- Important emotional lines: plain words only.",
+  "- If a line is beautiful but slows comprehension: simplify it.",
+  "- At least 50% of lines must be paraphrasable in casual speech.",
   "",
   "[KEYWORDCOMBO ENGINE]",
-  "- Detect user topic X",
-  "- Internally generate 10 Seeds, auto-select best",
-  "- Seed format: [X+Image]/[Action]/[Flip]",
-  "- Image=OBJECT/IMAGERY (concrete)",
-  "- Action=VERB",
-  "- Flip=CONTRAST/PUNCH_WORD",
-  "- PRIMARY SEED reflected in: Hook, setting, Verse2 contrast, Bridge punchline",
-  "- Repeat limit: Image <=3, Flip <=4",
+  "- Detect topic X from user input.",
+  "- Internally generate 10 Seeds, auto-select best 1.",
+  "- Seed format: [X+IMAGE] / [ACTION] / [FLIP]",
+  "  IMAGE = concrete object (not concept).",
+  "  ACTION = verb that shows the emotion.",
+  "  FLIP = contrast word or unexpected pivot.",
+  "- PRIMARY SEED must appear in: Hook core line, scene setting, Verse2 contrast, Bridge punchline.",
+  "- Repeat limit: IMAGE word max 3x, FLIP word max 4x.",
   "",
-  "[SCENE + SETTING CONSISTENCY]",
-  "- Lock 1 dominant physical space before writing",
-  "- All lines written as camera-filmable scenes",
-  "- Emotion shown through: objects / actions / environment / choices",
-  "- Metaphors derived from objects within the scene",
+  "[SCENE LOCK]",
+  "- Lock 1 dominant physical space before writing. All lines camera-filmable from that space.",
+  "- Emotion shown through: objects / actions / environment choices only.",
+  "- Metaphors must be derived from objects that exist within the locked scene.",
   "",
-  "[OBJECT MOTIF TRACKING]",
-  "- 5-9 props recommended",
-  "- 2-3 props used as recurring motifs",
-  "- Meaning changes on repetition (same object, different context)",
-  "",
-  "[NARRATIVE ENGINE]",
-  "- 1 song = 1 event + 1 conflict + 1 turn + 1 ending",
-  "- Internal: speaker/listener/desire/final change",
-  "- POV/listener consistency maintained",
-  "- ARC:",
-  "  Verse1: setup + desire",
-  "  Pre: tension + trigger",
-  "  Hook: identity declaration",
-  "  Verse2: escalation (closer/higher stakes)",
-  "  Bridge: turn (decision/confession/reversal)",
-  "  Final: resolution (acceptance/departure/resonance)",
-  "- Pre-Hook must have visible trigger: action/sound/stop/choice",
-  "- Hook must sound like the result of that trigger",
-  "",
-  "[SHOW-DONT-TELL]",
-  "- No standalone direct emotion statements",
-  "- If used, attach scene evidence on same/next line",
-  "- 4+ lines = include sensory info (sound/light/texture/temperature/movement)",
+  "[OBJECT MOTIF]",
+  "- Use 5-9 props total. Pick 2-3 as recurring motifs.",
+  "- Motif rule: same object appears 2-3 times across sections, each time with different emotional meaning.",
+  "- Example: 'key' in Verse1 = routine. 'key' in Bridge = choice to leave. 'key' in Outro = left on the counter.",
   "",
   "[HOOK SYSTEM]",
-  "- Hook = core sentence of the song",
-  "- [Hook] 2+ times recommended",
+  "- Hook = the single most memorable sentence of the song.",
+  "- Hook appears minimum 2 times.",
   "- Hook Core Line rules:",
-  "  () required",
-  "  () <=5 words",
-  "  () = echo/adlib/emphasis/call-response only",
-  "  No narrative sentences inside ()",
-  "  2-8 syllables recommended (max 16)",
-  "  Outside () <= 6 words recommended",
-  "  Should sound like something a person would actually say in the scene",
-  "- Repeat rules:",
-  "  Same line consecutive max 2 times",
-  "  Other repeats with 1 micro-variation only",
+  "  Must use () for adlibs.",
+  "  () content max 5 words. () carries echo/emphasis only, never narrative.",
+  "  Adlib vocab: mm, mhm, uh, ah, oh, ooh, woo, yeah, nah, hey, woah, la-la, na-na, uh-huh.",
+  "  No '~' symbol. Use hyphens for repeats: oh-oh, woo-woo.",
+  "  Outside (): max 6 words recommended.",
+  "  Should sound like something a person would say in the locked scene.",
+  "- Hook must sound like the direct result of Pre-Chorus trigger.",
+  "- Same line consecutive max 2 times. Other repeats: 1 micro-variation only.",
   "",
-  "[SUNO PARENTHESES RULE]",
-  "- () for vocal assist only",
-  "- Hook sections: () 2+ times recommended",
-  "- Short and rhythmic",
-  "- No complex punctuation",
-  "- () must not carry story",
-  "- Allowed: mm, mhm, hm, uh, uh-huh, huh, ah, oh, ooh, woo, yeah, nah, hey, woah, la-la, na-na",
-  "- No '~', only hyphens/repeats (oh-oh, woo-woo)",
-  "",
-  "[LINE BAND + WAVE]",
-  "- All lyric lines 2-8 syllables (excluding spaces)",
-  "- Parentheses content included in syllable count",
-  "- Mix short (2-3) + long (6-9) lines",
-  "- Hook = shorter and tighter than Verse",
-  "- No tongue-twisters or prose-style long sentences",
+  "[NARRATIVE ENGINE]",
+  "- 1 song = 1 event + 1 conflict + 1 turn + 1 ending.",
+  "- Internal tracking: speaker / listener / desire / final change.",
+  "- POV consistency maintained throughout.",
+  "- Pre-Chorus trigger: must be a visible action/sound/choice — not a feeling.",
   "",
   "[DEVICES ENGINE]",
-  "- Natural inclusion across song:",
-  "  metaphor, simile, inversion, exclamation, parallelism, rhyme, punchline",
-  "- Genre priority:",
-  "  Hip-Hop = rhyme/punch/parallelism/inversion emphasis",
-  "  Other = metaphor/simile/parallelism/exclamation focus",
-  "- Section placement:",
-  "  Verse1: metaphor/simile",
-  "  Verse2: parallelism + inversion",
-  "  Bridge or Final: exclamation + punchline",
-  "- Internal rhyme 1+ times",
-  "- Parallel structure 1+ pairs",
+  "- Natural inclusion across song: metaphor, simile, inversion, exclamation, parallelism, rhyme, punchline.",
+  "- Genre placement:",
+  "  Verse1: metaphor or simile to anchor the scene.",
+  "  Verse2: parallelism + inversion to escalate.",
+  "  Bridge or Final: exclamation + punchline for the turn.",
+  "- Internal rhyme: 1+ times per song minimum.",
+  "- Parallel structure: 1+ pairs minimum.",
   "",
-  "[RAP MODE]",
-  "- Activated for Hip-Hop/rap requests",
-  "- End rhyme maintained",
-  "- Internal rhyme density increased",
-  "- A/B bars: A=scene/action, B=reversal",
-  "- Punchlines 2+ per verse recommended",
+  "[ANTI-CLONE RULE]",
+  "- When topic repeats from previous: ban reuse of:",
+  "  1) primary seed image word",
+  "  2) hook core line verb",
+  "  3) scene setting location",
+  "  4) bridge decision verb.",
+  "- Replace all four with new choices consistent with selected arc.",
   "",
   "[HUMAN SPEECH FILTER]",
-  "- Final check: if a line sounds like a slogan/description, internally revise",
-  "- Exception: Hook Core Line can be caption-style (with scene plausibility)",
+  "- Final pass: if a line reads like a greeting card or ad slogan → revise internally.",
+  "- Exception: Hook Core Line may be caption-style if it has scene plausibility.",
   "",
-  "[BANNED WORDS — ABSOLUTE PROHIBITION]",
-  "- NEVER use these words or their variants in any lyrics:",
+  "[BANNED WORDS — ZERO TOLERANCE]",
+  "- NEVER use in any lyrics:",
   "  neon, neons, neon-lit, neon-soaked, neon glow, neon sign, neon light, fluorescent",
   "  번져, 번지다, 번진, 번지는, 번져가, 번져서, 퍼져, 퍼지다, 퍼진, 스며들어, 흘러내려",
-  "- These words are overused cliches. Use concrete, original imagery instead.",
-  "- If you catch yourself writing any banned word, replace it with a scene-specific alternative.",
+  "  shattered, broken pieces, fade away, falling apart, lost in the dark",
+  "  빛나다(단독), 반짝이다(단독), 아름다워(단독)",
+  "- These are lyric cliches. Replace with scene-specific concrete alternatives.",
+  "- If caught writing a banned word: delete and replace before output.",
   "",
-  "[FINAL VALIDATION]",
-  "- Lyrics-only output maintained",
-  "- Lines 2-8 syllables",
-  "- Scene visibility maintained",
-  "- Space consistency maintained",
-  "- Motif repetition confirmed",
-  "- Hook/Pre causality confirmed",
-  "- Hook = same sentence repeated 2 times",
-  "- Bridge turn exists",
-  "- () rules followed",
-  "- No decorative rhetoric without scene/narrative support",
-  "- No banned words present (neon, 번져, etc.)",
-  "- On failure: internal revision before output"
+  "[DIRECT OUTPUT LOCK]",
+  "- Output lyrics only. No explanations, no analysis, no emoji.",
+  "- Section labels only: [Verse], [Pre-Chorus], [Hook], [Bridge], [Outro].",
+  "- Variation and arc selection are internal. Never print them.",
+  "",
+  "[FINAL VALIDATION — run before output]",
+  "- [ ] Lines within syllable band",
+  "- [ ] Scene visibility: every line filmable",
+  "- [ ] Object motif appears 2-3x with meaning shift",
+  "- [ ] Hook appears 2+ times",
+  "- [ ] Pre-Chorus has visible trigger (action/sound/choice)",
+  "- [ ] Hook sounds like result of that trigger",
+  "- [ ] Bridge contains the arc turn",
+  "- [ ] () rules followed in Hook",
+  "- [ ] No standalone emotion statements",
+  "- [ ] No banned words",
+  "- [ ] No decorative rhetoric without scene/narrative support",
+  "- On any failure: revise internally before output."
 ].join("\n");
 
 // ===== 금지 단어 시스템 =====
@@ -220,6 +185,11 @@ export var BANNED_WORDS: { word: string; similar: string[]; replacement: string 
     word: "번져",
     similar: ["번지다", "번진", "번지는", "번져가", "번져서", "퍼져", "퍼지다", "퍼진", "스며들어", "흘러내려"],
     replacement: "사라져"
+  },
+  {
+    word: "shattered",
+    similar: ["broken pieces", "fade away", "falling apart", "lost in the dark"],
+    replacement: "left behind"
   }
 ];
 
@@ -239,36 +209,107 @@ export function filterBannedWords(text: string): string {
 }
 
 // ===== Claude API용 가사 생성 프롬프트 빌더 =====
+// topic-pool.ts의 추천 시스템 데이터를 구조화하여 Claude에 전달
 export function buildLyricsPrompt(params: {
   genre: string;
   moods: string[];
   theme: string;
   vocal: string;
   language: string;
+  // topic-pool 추천 데이터 (있을 때만 전달)
+  seedObjects?: string[];
+  seedPlaces?: string[];
+  seedActions?: string[];
+  seedSounds?: string[];
+  hookPattern?: string;
+  writingTechnique?: string;
+  techniqueDesc?: string;
 }): string {
-  var langInstruction = params.language === "ko"
-    ? "Write lyrics in Korean."
-    : params.language === "both"
-    ? "Write lyrics mixing English and Korean naturally."
-    : "Write lyrics in English only.";
+
+  // 언어별 규칙 주입
+  var langInstruction = "";
+  if (params.language === "ko") {
+    langInstruction = [
+      "Write ALL lyrics in Korean.",
+      "Korean syllable rule: 4-12 syllables per line.",
+      "Use 의성어/의태어 (e.g., 툭, 쿵, 스르륵, 슬렁, 느릿느릿) as rhythmic anchors — minimum 2 per song.",
+      "Korean rhyme: use 모음 라임 or 종성 라임 in Hook. Use 연속 라임 at least once in a verse.",
+      "Code-switch rule: ONE English phrase in the Hook is allowed if it sounds natural when sung."
+    ].join("\n");
+  } else if (params.language === "both") {
+    langInstruction = [
+      "Write lyrics mixing English and Korean naturally.",
+      "Suggested structure: English verse + Korean Pre-Chorus/Bridge, or full Korean with English Hook phrase.",
+      "Code-switch must feel earned by the rhythm, not random.",
+      "When Korean appears: use 4-12 syllable lines and include 의성어/의태어."
+    ].join("\n");
+  } else {
+    langInstruction = "Write ALL lyrics in English.";
+  }
+
+  // 랩 모드 주입
+  var isRap = params.genre.toLowerCase().indexOf("hip") !== -1
+    || params.genre.toLowerCase().indexOf("rap") !== -1
+    || params.genre.toLowerCase().indexOf("trap") !== -1
+    || params.genre.toLowerCase().indexOf("drill") !== -1;
+
+  var rapInstruction = isRap
+    ? [
+        "",
+        "[RAP MODE ACTIVE]",
+        "- Maintain end rhyme (AABB or ABAB) throughout each verse.",
+        "- 2+ internal rhymes per verse.",
+        "- A/B bar: A = scene/action, B = reversal or punchline.",
+        "- Include 2+ punchlines per verse: CONTRAST PUNCH or RHYME PUNCH or METAPHOR FLIP.",
+        "- Punchline must land in the last 3 words of a line."
+      ].join("\n")
+    : "";
+
+  // topic-pool 추천 데이터 주입 (있을 때)
+  var seedBlock = "";
+  if (params.seedObjects && params.seedObjects.length > 0) {
+    seedBlock = [
+      "",
+      "[SCENE SEED — use these as your raw material]",
+      "Objects to work with: " + params.seedObjects.slice(0, 5).join(", "),
+      params.seedPlaces && params.seedPlaces.length > 0
+        ? "Possible locations: " + params.seedPlaces.slice(0, 3).join(", ")
+        : "",
+      params.seedActions && params.seedActions.length > 0
+        ? "Action verbs: " + params.seedActions.slice(0, 5).join(", ")
+        : "",
+      params.seedSounds && params.seedSounds.length > 0
+        ? "Sound palette: " + params.seedSounds.slice(0, 3).join(", ")
+        : "",
+      params.hookPattern
+        ? "Hook pattern suggestion: " + params.hookPattern
+        : "",
+      params.writingTechnique
+        ? "Writing technique: " + params.writingTechnique + (params.techniqueDesc ? " — " + params.techniqueDesc : "")
+        : "",
+      "Pick 2-3 of these as recurring motifs. Do not use all of them."
+    ].filter(function(l) { return l !== ""; }).join("\n");
+  }
 
   var prompt = [
-    "Write a song for the following:",
+    "Write a complete song for the following parameters:",
     "",
     "Genre: " + params.genre,
     "Mood: " + params.moods.join(", "),
-    "Topic/Theme: " + (params.theme || "freestyle - choose a compelling topic"),
+    "Topic/Theme: " + (params.theme || "freestyle — choose a compelling, specific topic"),
     "Vocal Style: " + (params.vocal || "not specified"),
     "",
     langInstruction,
+    rapInstruction,
+    seedBlock,
     "",
     "Follow ALL rules in your system prompt exactly.",
-    "Output lyrics only. No explanations.",
-    "Include section labels: [Verse], [Pre-Chorus], [Hook], [Bridge], [Outro]",
-    "Hook must appear at least 2 times.",
-    "Minimum 24 lines (excluding labels).",
-    "Use () for adlibs in Hook sections."
-  ].join("\n");
+    "Output lyrics only. No explanations. No commentary.",
+    "Section labels: [Verse], [Pre-Chorus], [Hook], [Bridge], [Outro]",
+    "Hook must appear at minimum 2 times.",
+    "Minimum 24 lines excluding labels.",
+    "Use () for adlibs in Hook sections only."
+  ].filter(function(l) { return l !== undefined; }).join("\n");
 
   return prompt;
 }
