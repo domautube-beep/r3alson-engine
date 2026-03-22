@@ -161,6 +161,7 @@ export default function CreatePage() {
   var [playlistCount, setPlaylistCount] = useState(5);
   var [playlistTracks, setPlaylistTracks] = useState<{title: string; prompt: string; lyrics: string; variation: string}[]>([]);
   var [isGeneratingPlaylist, setIsGeneratingPlaylist] = useState(false);
+  var [playlistProgress, setPlaylistProgress] = useState(0);
   var [expandedTrack, setExpandedTrack] = useState<number | null>(null);
   var [customMood, setCustomMood] = useState("");
 
@@ -219,6 +220,7 @@ export default function CreatePage() {
   // 플레이리스트 배리에이션 생성
   async function generatePlaylist() {
     setIsGeneratingPlaylist(true);
+    setPlaylistProgress(0);
 
     // ===== 장르별 맞춤 배리에이션 전략 =====
     var genreLower = genre.toLowerCase();
@@ -478,6 +480,7 @@ export default function CreatePage() {
           variation: v.label + " — " + v.desc
         });
       }
+      setPlaylistProgress(i + 1);
     }
 
     if (tracks.length > 0) {
@@ -485,6 +488,7 @@ export default function CreatePage() {
       setStep(5);
     }
     setIsGeneratingPlaylist(false);
+    setPlaylistProgress(0);
   }
 
   // 이전 스텝으로 돌아가기
@@ -1276,13 +1280,43 @@ export default function CreatePage() {
                 <span className="text-xs" style={{ color: "#7A7A8E" }}>{playlistCount}곡</span>
               </div>
 
-              <button
-                onClick={generatePlaylist}
-                disabled={isGeneratingPlaylist}
-                className={"w-full py-3 rounded-xl font-semibold text-white " + (isGeneratingPlaylist ? "opacity-50" : "glow-btn")}
-              >
-                {isGeneratingPlaylist ? "생성 중... (" + playlistTracks.length + "/" + playlistCount + "곡)" : playlistCount + "곡 플레이리스트 생성"}
-              </button>
+              {isGeneratingPlaylist ? (
+                <div className="space-y-3">
+                  {/* 프로그레스 바 */}
+                  <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "#1E1E2E" }}>
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: (playlistProgress / playlistCount * 100) + "%",
+                        background: "linear-gradient(90deg, #8B5CF6, #EC4899)"
+                      }}
+                    />
+                  </div>
+
+                  {/* 진행 상태 텍스트 */}
+                  <div className="flex items-center justify-center gap-3 py-3">
+                    <svg className="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="#2A2A4A" strokeWidth="3" />
+                      <path d="M12 2a10 10 0 019.95 9" stroke="#8B5CF6" strokeWidth="3" strokeLinecap="round" />
+                    </svg>
+                    <span className="text-sm font-semibold" style={{ color: "#8B5CF6" }}>
+                      {playlistProgress}/{playlistCount}곡 생성 중...
+                    </span>
+                  </div>
+
+                  {/* 현재 트랙 정보 */}
+                  <p className="text-center text-xs" style={{ color: "#7A7A8E" }}>
+                    각 트랙마다 고유한 배리에이션을 만들고 있어요
+                  </p>
+                </div>
+              ) : (
+                <button
+                  onClick={generatePlaylist}
+                  className="w-full py-3 rounded-xl font-semibold text-white glow-btn"
+                >
+                  {playlistCount + "곡 플레이리스트 생성"}
+                </button>
+              )}
             </div>
 
             {/* 저장 버튼 */}

@@ -187,6 +187,13 @@ export var LYRICS_SYSTEM_PROMPT = [
   "- Final check: if a line sounds like a slogan/description, internally revise",
   "- Exception: Hook Core Line can be caption-style (with scene plausibility)",
   "",
+  "[BANNED WORDS — ABSOLUTE PROHIBITION]",
+  "- NEVER use these words or their variants in any lyrics:",
+  "  neon, neons, neon-lit, neon-soaked, neon glow, neon sign, neon light, fluorescent",
+  "  번져, 번지다, 번진, 번지는, 번져가, 번져서, 퍼져, 퍼지다, 퍼진, 스며들어, 흘러내려",
+  "- These words are overused cliches. Use concrete, original imagery instead.",
+  "- If you catch yourself writing any banned word, replace it with a scene-specific alternative.",
+  "",
   "[FINAL VALIDATION]",
   "- Lyrics-only output maintained",
   "- Lines 2-8 syllables",
@@ -198,6 +205,7 @@ export var LYRICS_SYSTEM_PROMPT = [
   "- Bridge turn exists",
   "- () rules followed",
   "- No decorative rhetoric without scene/narrative support",
+  "- No banned words present (neon, 번져, etc.)",
   "- On failure: internal revision before output"
 ].join("\n");
 
