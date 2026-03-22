@@ -153,6 +153,10 @@ export default function CreatePage() {
   var [isGenerating, setIsGenerating] = useState(false);
   var [isDemo, setIsDemo] = useState(false);
   var [copied, setCopied] = useState("");
+  var [playlistCount, setPlaylistCount] = useState(5);
+  var [playlistTracks, setPlaylistTracks] = useState<{title: string; prompt: string; lyrics: string; variation: string}[]>([]);
+  var [isGeneratingPlaylist, setIsGeneratingPlaylist] = useState(false);
+  var [expandedTrack, setExpandedTrack] = useState<number | null>(null);
   var [customMood, setCustomMood] = useState("");
 
   // 장르 선택 시 추천값 자동 세팅
@@ -205,6 +209,111 @@ export default function CreatePage() {
     } else {
       setSelectedInstruments(selectedInstruments.concat([inst]));
     }
+  }
+
+  // 플레이리스트 배리에이션 생성
+  function generatePlaylist() {
+    setIsGeneratingPlaylist(true);
+
+    // 원곡 기반 배리에이션 전략
+    var variations = [
+      { label: "원곡 그대로", desc: "동일한 분위기의 시작곡" },
+      { label: "템포 다운", desc: "BPM을 낮춰 더 차분하게" },
+      { label: "악기 변화", desc: "다른 악기로 같은 감정을" },
+      { label: "무드 시프트", desc: "살짝 다른 감정 색깔" },
+      { label: "에너지 업", desc: "같은 테마, 더 강한 에너지" },
+      { label: "어쿠스틱 버전", desc: "벗겨낸 느낌, 날것의 감정" },
+      { label: "야간 버전", desc: "더 어둡고 깊은 시간대" },
+      { label: "새벽 버전", desc: "고요하고 내밀한 분위기" },
+      { label: "확장 버전", desc: "원곡을 더 크게 펼친 느낌" },
+      { label: "미니멀 버전", desc: "최소한의 요소로 핵심만" }
+    ];
+
+    // BPM 배리에이션
+    var bpmVariations = [0, -15, -5, +5, +20, -25, -10, -20, +10, -30];
+
+    // 무드 시프트 풀
+    var moodShifts: Record<string, string[]> = {
+      "melancholic": ["bittersweet", "wistful", "tender", "somber", "nostalgic"],
+      "dark": ["mysterious", "eerie", "brooding", "haunting", "sinister"],
+      "chill": ["peaceful", "calm", "dreamy", "serene", "warm"],
+      "energetic": ["bold", "fierce", "triumphant", "euphoric", "wild"],
+      "dreamy": ["ethereal", "atmospheric", "surreal", "hypnotic", "peaceful"],
+      "aggressive": ["fierce", "intense", "rebellious", "bold", "dark"],
+      "nostalgic": ["bittersweet", "sentimental", "warm", "wistful", "tender"],
+      "romantic": ["tender", "warm", "intimate", "sentimental", "dreamy"]
+    };
+
+    // 악기 교체 풀
+    var instrumentSwaps: Record<string, string[]> = {
+      "piano": ["rhodes", "electric piano", "wurlitzer", "harp", "music box"],
+      "electric guitar": ["acoustic guitar", "clean guitar", "fingerstyle guitar", "slide guitar"],
+      "acoustic guitar": ["piano", "ukulele", "fingerstyle guitar", "harp"],
+      "808 bass": ["sub bass", "bass guitar", "synth bass"],
+      "pad synth": ["strings", "ambient textures", "warm pads", "organ"],
+      "live drums": ["brushed drums", "lo-fi drums", "drum machine", "minimal percussion"],
+      "strings": ["cello", "violin", "orchestral strings", "harp"]
+    };
+
+    var tracks: {title: string; prompt: string; lyrics: string; variation: string}[] = [];
+
+    for (var i = 0; i < playlistCount; i++) {
+      var v = variations[i % variations.length];
+      var trackBpm = Math.max(50, Math.min(180, bpm + bpmVariations[i % bpmVariations.length]));
+
+      // 무드 배리에이션
+      var trackMoods = selectedMoods.slice();
+      if (i > 0 && i % 3 === 0) {
+        var baseMood = selectedMoods[0] ? selectedMoods[0].toLowerCase() : "";
+        var shifts = moodShifts[baseMood] || ["atmospheric", "warm", "gentle"];
+        trackMoods = [shifts[i % shifts.length]].concat(selectedMoods.slice(1));
+      }
+
+      // 악기 배리에이션
+      var trackInst = selectedInstruments.slice();
+      if (i > 0 && i % 2 === 0 && trackInst.length > 0) {
+        var swapTarget = trackInst[0].toLowerCase();
+        var swapPool = instrumentSwaps[swapTarget];
+        if (swapPool) {
+          trackInst[0] = swapPool[i % swapPool.length];
+        }
+      }
+
+      // 어쿠스틱 버전
+      if (v.label === "어쿠스틱 버전") {
+        trackInst = ["acoustic guitar", "soft percussion"];
+        trackBpm = Math.max(50, bpm - 20);
+      }
+
+      // 미니멀 버전
+      if (v.label === "미니멀 버전") {
+        trackInst = trackInst.length > 0 ? [trackInst[0]] : ["piano"];
+        trackBpm = Math.max(50, bpm - 10);
+      }
+
+      // 제목 배리에이션
+      var titleSuffixes = ["", " II", " (Night)", " (Dawn)", " (Reprise)", " (Stripped)", " (Deep Cut)", " (Extended)", " (Minimal)", " (Live)"];
+      var trackTitle = generatedTitle + titleSuffixes[i % titleSuffixes.length];
+
+      // 프롬프트 조립 (감성 엔진 사용)
+      var trackPromptParts: string[] = [];
+      trackPromptParts.push(genre.toLowerCase());
+      trackPromptParts.push(trackMoods.join(", ").toLowerCase());
+      trackPromptParts.push(trackBpm + " bpm");
+      if (trackInst.length > 0) trackPromptParts.push(trackInst.join(", ").toLowerCase());
+      if (selectedVocal) trackPromptParts.push(selectedVocal.toLowerCase());
+
+      tracks.push({
+        title: trackTitle,
+        prompt: trackPromptParts.join(", "),
+        lyrics: i === 0 ? generatedLyrics : "(원곡 가사를 기반으로 " + v.label + " 버전 작성)",
+        variation: v.label + " — " + v.desc
+      });
+    }
+
+    setPlaylistTracks(tracks);
+    setIsGeneratingPlaylist(false);
+    setStep(5);
   }
 
   // 이전 스텝으로 돌아가기
@@ -299,7 +408,7 @@ export default function CreatePage() {
         <div className="flex-1">
           <h1 className="text-lg font-bold">새 곡 만들기</h1>
           <div className="flex items-center gap-2 mt-1">
-            {[1,2,3,4].map(function(s) {
+            {[1,2,3,4,5].map(function(s) {
               return <div key={s} className="h-1 flex-1 rounded-full transition-all duration-500" style={{ background: s <= step ? "linear-gradient(90deg, #8B5CF6, #EC4899)" : "#1E1E2E" }} />;
             })}
           </div>
@@ -812,6 +921,46 @@ export default function CreatePage() {
               </ol>
             </div>
 
+            {/* 플레이리스트 확장 */}
+            <div className="glass-card p-5" style={{ borderColor: "rgba(139, 92, 246, 0.2)" }}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">{"\uD83C\uDFB6"}</span>
+                <span className="font-bold">플레이리스트로 확장</span>
+              </div>
+              <p className="text-sm mb-4" style={{ color: "#7A7A8E" }}>
+                이 곡이 마음에 들면, 같은 감성의 배리에이션으로 플레이리스트를 만들어보세요
+              </p>
+
+              <div className="flex items-center gap-4 mb-4">
+                <label className="text-sm font-semibold" style={{ color: "#7A7A8E" }}>곡 수</label>
+                <div className="flex items-center gap-2">
+                  {[3, 5, 7, 10].map(function(n) {
+                    return (
+                      <button
+                        key={n}
+                        onClick={function() { setPlaylistCount(n); }}
+                        className={"w-10 h-10 rounded-xl text-sm font-bold transition-all " + (playlistCount === n ? "text-white" : "")}
+                        style={{
+                          backgroundColor: playlistCount === n ? "#8B5CF6" : "#111118",
+                          color: playlistCount === n ? "white" : "#7A7A8E"
+                        }}
+                      >
+                        {n}
+                      </button>
+                    );
+                  })}
+                </div>
+                <span className="text-xs" style={{ color: "#7A7A8E" }}>{playlistCount}곡</span>
+              </div>
+
+              <button
+                onClick={generatePlaylist}
+                className="w-full py-3 rounded-xl font-semibold text-white glow-btn"
+              >
+                {playlistCount}곡 플레이리스트 생성
+              </button>
+            </div>
+
             {/* 저장 버튼 */}
             <button
               onClick={function() {
@@ -855,6 +1004,162 @@ export default function CreatePage() {
               >
                 새 곡 더 만들기
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* ===== Step 5: 플레이리스트 결과 ===== */}
+        {step === 5 && (
+          <div className="space-y-5 fade-in">
+            <div className="text-center mb-4">
+              <span className="text-3xl">{"\uD83C\uDFB6"}</span>
+              <h2 className="text-xl font-bold mt-2">{playlistTracks.length}곡 플레이리스트</h2>
+              <p className="text-sm" style={{ color: "#7A7A8E" }}>
+                원곡 기반 배리에이션 — 각 곡의 프롬프트를 수노에 붙여넣으세요
+              </p>
+            </div>
+
+            {/* 트랙 리스트 */}
+            <div className="space-y-2.5">
+              {playlistTracks.map(function(track, idx) {
+                var isExpanded = expandedTrack === idx;
+                return (
+                  <div key={idx} className="glass-card overflow-hidden fade-in" style={{ animationDelay: (idx * 0.05) + "s", animationFillMode: "both" }}>
+                    {/* 트랙 헤더 */}
+                    <button
+                      onClick={function() { setExpandedTrack(isExpanded ? null : idx); }}
+                      className="w-full text-left p-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
+                          style={{
+                            background: idx === 0 ? "linear-gradient(135deg, #8B5CF6, #EC4899)" : "#1E1E2E",
+                            color: idx === 0 ? "white" : "#7A7A8E"
+                          }}
+                        >
+                          {idx + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm truncate">{track.title}</p>
+                          <p className="text-xs truncate" style={{ color: "#7A7A8E" }}>{track.variation}</p>
+                        </div>
+                        <svg
+                          width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A7A8E" strokeWidth="2"
+                          style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
+                        >
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </div>
+                    </button>
+
+                    {/* 펼친 내용 */}
+                    {isExpanded && (
+                      <div className="px-4 pb-4 space-y-3 fade-in">
+                        {/* 프롬프트 */}
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-semibold" style={{ color: "#7A7A8E" }}>수노 프롬프트</span>
+                            <button
+                              onClick={function() { copyToClipboard(track.prompt, "pl-p-" + idx); }}
+                              className="text-[10px] px-2.5 py-1 rounded-full"
+                              style={{
+                                backgroundColor: copied === "pl-p-" + idx ? "rgba(52,211,153,0.15)" : "rgba(139,92,246,0.1)",
+                                color: copied === "pl-p-" + idx ? "#34D399" : "#8B5CF6"
+                              }}
+                            >
+                              {copied === "pl-p-" + idx ? "복사됨!" : "복사"}
+                            </button>
+                          </div>
+                          <p className="text-sm p-3 rounded-xl" style={{ backgroundColor: "#050508", color: "#9CA3AF", lineHeight: "1.6" }}>
+                            {track.prompt}
+                          </p>
+                        </div>
+
+                        {/* 가사 */}
+                        {track.lyrics && (
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs font-semibold" style={{ color: "#7A7A8E" }}>가사</span>
+                              <button
+                                onClick={function() { copyToClipboard(track.lyrics, "pl-l-" + idx); }}
+                                className="text-[10px] px-2.5 py-1 rounded-full"
+                                style={{
+                                  backgroundColor: copied === "pl-l-" + idx ? "rgba(52,211,153,0.15)" : "rgba(139,92,246,0.1)",
+                                  color: copied === "pl-l-" + idx ? "#34D399" : "#8B5CF6"
+                                }}
+                              >
+                                {copied === "pl-l-" + idx ? "복사됨!" : "복사"}
+                              </button>
+                            </div>
+                            <pre className="text-sm p-3 rounded-xl whitespace-pre-wrap" style={{ backgroundColor: "#050508", color: "#9CA3AF", lineHeight: "1.6" }}>
+                              {track.lyrics}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* 전체 복사 */}
+            <button
+              onClick={function() {
+                var allPrompts = playlistTracks.map(function(t, i) {
+                  return "--- Track " + (i + 1) + ": " + t.title + " ---\n[Variation] " + t.variation + "\n[Prompt] " + t.prompt + (t.lyrics ? "\n[Lyrics]\n" + t.lyrics : "");
+                }).join("\n\n");
+                copyToClipboard(allPrompts, "all-playlist");
+              }}
+              className="w-full py-3 rounded-xl font-semibold transition-all"
+              style={{
+                backgroundColor: copied === "all-playlist" ? "rgba(52, 211, 153, 0.15)" : "rgba(139, 92, 246, 0.1)",
+                color: copied === "all-playlist" ? "#34D399" : "#8B5CF6",
+                border: "1px solid " + (copied === "all-playlist" ? "rgba(52, 211, 153, 0.3)" : "rgba(139, 92, 246, 0.2)")
+              }}
+            >
+              {copied === "all-playlist" ? "전체 복사됨!" : "전체 프롬프트 복사 (" + playlistTracks.length + "곡)"}
+            </button>
+
+            {/* 액션 */}
+            <div className="flex gap-3">
+              <button
+                onClick={function() { setStep(4); }}
+                className="flex-1 py-3 rounded-xl text-center font-semibold"
+                style={{ backgroundColor: "#111118", color: "#7A7A8E" }}
+              >
+                원곡으로 돌아가기
+              </button>
+              <Link
+                href="/"
+                className="flex-1 py-3 rounded-xl text-center font-semibold text-white glow-btn"
+              >
+                홈으로
+              </Link>
+            </div>
+
+            {/* 가이드 */}
+            <div className="glass-card p-4">
+              <p className="text-sm font-semibold mb-3">{"\uD83D\uDCD6"} 플레이리스트 제작 가이드</p>
+              <ol className="space-y-2 text-sm" style={{ color: "#7A7A8E" }}>
+                <li className="flex gap-2">
+                  <span style={{ color: "#8B5CF6" }}>1.</span>
+                  각 트랙의 프롬프트를 수노에 하나씩 붙여넣기
+                </li>
+                <li className="flex gap-2">
+                  <span style={{ color: "#8B5CF6" }}>2.</span>
+                  트랙당 3~5곡 생성 후 베스트 선택
+                </li>
+                <li className="flex gap-2">
+                  <span style={{ color: "#8B5CF6" }}>3.</span>
+                  {playlistTracks.length}곡 모아서 DistroKid에 앨범/EP로 배포
+                </li>
+                <li className="flex gap-2">
+                  <span style={{ color: "#8B5CF6" }}>4.</span>
+                  Spotify에서 플레이리스트로 묶으면 알고리즘 노출 UP
+                </li>
+              </ol>
             </div>
           </div>
         )}
