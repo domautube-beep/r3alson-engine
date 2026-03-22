@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import trendsData from "@/data/trends.json";
+import { useApiKey } from "@/lib/api-key-context";
 
 // ===== 장르 (50+) =====
 var GENRE_CATEGORIES: Record<string, string[]> = {
@@ -134,8 +135,12 @@ function getRecommendations(selectedGenre: string) {
 }
 
 export default function CreatePage() {
+  var { apiKey, isKeySet } = useApiKey();
+
   // 상태 관리
   var [step, setStep] = useState(1);
+  var [language, setLanguage] = useState("en");
+  var [sectionLength, setSectionLength] = useState("normal");
   var [mode, setMode] = useState(""); // trend, free, hybrid
   var [genre, setGenre] = useState("");
   var [selectedMoods, setSelectedMoods] = useState<string[]>([]);
@@ -353,9 +358,12 @@ export default function CreatePage() {
     setIsGenerating(true);
 
     try {
+      var headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (apiKey) headers["x-api-key"] = apiKey;
+
       var res = await fetch("/api/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: headers,
         body: JSON.stringify({
           genre: genre,
           moods: selectedMoods,
@@ -363,7 +371,9 @@ export default function CreatePage() {
           vocal: selectedVocal,
           instruments: selectedInstruments,
           lyricsMode: lyricsMode,
-          lyricsTheme: lyricsTheme
+          lyricsTheme: lyricsTheme,
+          language: language,
+          sectionLength: sectionLength
         })
       });
 
@@ -372,7 +382,7 @@ export default function CreatePage() {
       setGeneratedLyrics(data.lyrics || "");
       setGeneratedTitle(data.title || "");
       setGeneratedTags(data.tags || "");
-      setIsDemo(false);
+      setIsDemo(!data.isAI);
     } catch (err) {
       setIsDemo(true);
     }
@@ -714,6 +724,71 @@ export default function CreatePage() {
             <p className="text-sm" style={{ color: "#9CA3AF" }}>
               가사 방식을 선택하세요. 나중에 수정할 수 있어요.
             </p>
+
+            {/* 언어 선택 */}
+            <div className="glass-card p-4">
+              <label className="text-sm font-semibold block mb-2">가사 언어</label>
+              <div className="flex gap-2">
+                {[
+                  { id: "en", label: "English" },
+                  { id: "ko", label: "한국어" },
+                  { id: "both", label: "혼합 (EN+KR)" }
+                ].map(function(opt) {
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={function() { setLanguage(opt.id); }}
+                      className={"flex-1 py-2.5 rounded-xl text-sm font-medium transition-all " + (language === opt.id ? "text-white" : "")}
+                      style={{
+                        backgroundColor: language === opt.id ? "#8B5CF6" : "#111118",
+                        color: language === opt.id ? "white" : "#7A7A8E"
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 섹션 길이 */}
+            <div className="glass-card p-4">
+              <label className="text-sm font-semibold block mb-2">곡 길이</label>
+              <div className="flex gap-2">
+                {[
+                  { id: "short", label: "짧게", desc: "~20줄" },
+                  { id: "normal", label: "보통", desc: "~28줄" },
+                  { id: "long", label: "길게", desc: "40줄+" }
+                ].map(function(opt) {
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={function() { setSectionLength(opt.id); }}
+                      className={"flex-1 py-2.5 rounded-xl text-center transition-all"}
+                      style={{
+                        backgroundColor: sectionLength === opt.id ? "#8B5CF6" : "#111118",
+                        color: sectionLength === opt.id ? "white" : "#7A7A8E"
+                      }}
+                    >
+                      <span className="text-sm font-medium block">{opt.label}</span>
+                      <span className="text-[10px] block mt-0.5" style={{ opacity: 0.7 }}>{opt.desc}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* API 키 상태 표시 */}
+            {!isKeySet && (
+              <div className="glass-card p-3 flex items-center gap-3" style={{ borderColor: "rgba(251, 191, 36, 0.2)" }}>
+                <span className="text-lg">{"\u26A0\uFE0F"}</span>
+                <div className="flex-1">
+                  <p className="text-xs font-semibold" style={{ color: "#FBBF24" }}>API 키 미설정</p>
+                  <p className="text-[10px]" style={{ color: "#7A7A8E" }}>데모 가사가 출력됩니다. AI 가사를 원하면 설정에서 API 키를 입력하세요.</p>
+                </div>
+                <Link href="/settings" className="text-[10px] px-2 py-1 rounded-lg" style={{ backgroundColor: "rgba(139,92,246,0.1)", color: "#8B5CF6" }}>설정</Link>
+              </div>
+            )}
 
             {/* 가사 모드 선택 */}
             <div className="space-y-2">

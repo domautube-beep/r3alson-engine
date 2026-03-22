@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { LYRICS_SYSTEM_PROMPT, filterBannedWords, validateLyrics, buildLyricsPrompt } from "@/lib/lyrics-engine";
 import { generateStylePrompt, SUNO_SYSTEM_PROMPT, buildFullSunoPrompt } from "@/lib/suno-prompt-engine";
+import { callClaude, validateApiKeyFormat } from "@/lib/claude";
 
 // ===== 데모 가사 (엔진 규칙 준수) =====
 // DIRECT MODE / Scene Lock / Hook 2회 / () adlib / Show-don't-tell / Line 2-8 syllables
@@ -322,44 +323,104 @@ function generateTitle(genre: string, moods: string[]): string {
 
 // ===== POST 핸들러 =====
 export async function POST(request: NextRequest) {
-  var body = await request.json();
-  var { genre, moods, bpm, vocal, instruments, lyricsMode, lyricsTheme } = body;
+  // 보안: API 키는 헤더에서만 추출, 로깅 금지
+  var apiKey = request.headers.get("x-api-key") || "";
 
-  // 프롬프트 생성 (Suno Master Architect + LIL-PITY 엔진)
+  var body = await request.json();
+  var { genre, moods, bpm, vocal, instruments, lyricsMode, lyricsTheme, language, sectionLength } = body;
+
+  // 안전한 기본값
+  if (!moods || moods.length === 0) moods = ["atmospheric"];
+  if (!genre) genre = "ambient";
+  if (!language) language = "en";
+  if (!sectionLength) sectionLength = "normal";
+
+  // 수노 프롬프트 생성 (로컬 엔진 — 항상 작동)
   var prompt = generateStylePrompt({
     genre: genre,
     moods: moods,
-    bpm: bpm,
+    bpm: bpm || 80,
     vocal: vocal || "",
     instruments: instruments || []
   });
 
-  // 가사 생성
   var lyrics = "";
-  if (lyricsMode === "ai" || lyricsMode === "hybrid") {
-    // TODO: Claude API 연동 시 LYRICS_SYSTEM_PROMPT + buildLyricsPrompt() 사용
-    lyrics = generateDemoLyrics(genre, moods, lyricsTheme);
+  var title = "";
+  var tags = "";
+  var isAI = false;
 
-    // 금지 단어 필터
-    lyrics = filterBannedWords(lyrics);
+  // ===== Claude API 모드 (키가 있을 때) =====
+  if (apiKey && validateApiKeyFormat(apiKey)) {
+    // 언어 설정
+    var langInstruction = language === "ko" ? "Write all lyrics in Korean."
+      : language === "both" ? "Write lyrics mixing English and Korean naturally."
+      : "Write all lyrics in English.";
 
-    // 검증
-    var validation = validateLyrics(lyrics);
-    if (!validation.valid) {
+    // 섹션 길이 설정
+    var lengthInstruction = sectionLength === "long"
+      ? "Write extended sections. Each verse should be 8-12 lines. Each chorus 6-8 lines. Include Pre-Chorus, Bridge, and Outro. Total minimum 40 lines."
+      : sectionLength === "short"
+      ? "Write concise sections. Each verse 4-6 lines. Each chorus 4 lines. Total minimum 20 lines."
+      : "Write standard sections. Each verse 6-8 lines. Each chorus 4-6 lines. Include Pre-Chorus and Bridge. Total minimum 28 lines.";
+
+    // 가사 생성
+    if (lyricsMode === "ai" || lyricsMode === "hybrid") {
+      var lyricsUserPrompt = buildLyricsPrompt({
+        genre: genre,
+        moods: moods,
+        theme: lyricsTheme || "freestyle - choose a compelling topic",
+        vocal: vocal || "",
+        language: language
+      }) + "\n\n" + langInstruction + "\n" + lengthInstruction;
+
+      var lyricsResult = await callClaude(apiKey, LYRICS_SYSTEM_PROMPT, lyricsUserPrompt);
+
+      if (lyricsResult.success) {
+        lyrics = lyricsResult.text;
+        lyrics = filterBannedWords(lyrics);
+        isAI = true;
+      } else {
+        // API 실패 시 데모 폴백
+        lyrics = generateDemoLyrics(genre, moods, lyricsTheme);
+        lyrics = filterBannedWords(lyrics);
+      }
+    }
+
+    // 제목 + 태그 생성 (AI)
+    var metaPrompt = "Generate a song title and tags for:\nGenre: " + genre + "\nMood: " + moods.join(", ") + "\nTheme: " + (lyricsTheme || "freestyle") + "\n\nRespond in exactly this format (nothing else):\nTITLE: [one creative title, 2-4 words]\nTAGS: [8-10 hashtags separated by spaces]";
+    var metaResult = await callClaude(apiKey, "You are a music metadata specialist. Respond only in the exact format requested.", metaPrompt, 200);
+
+    if (metaResult.success) {
+      var metaText = metaResult.text;
+      var titleMatch = metaText.match(/TITLE:\s*(.+)/i);
+      var tagsMatch = metaText.match(/TAGS:\s*(.+)/i);
+      title = titleMatch ? filterBannedWords(titleMatch[1].trim()) : filterBannedWords(generateTitle(genre, moods));
+      tags = tagsMatch ? tagsMatch[1].trim() : "";
+      isAI = true;
+    } else {
+      title = filterBannedWords(generateTitle(genre, moods));
+    }
+  } else {
+    // ===== 데모 모드 (키 없을 때) =====
+    if (lyricsMode === "ai" || lyricsMode === "hybrid") {
+      lyrics = generateDemoLyrics(genre, moods, lyricsTheme);
       lyrics = filterBannedWords(lyrics);
     }
+    title = filterBannedWords(generateTitle(genre, moods));
   }
 
-  // 제목 + 태그
-  var title = filterBannedWords(generateTitle(genre, moods));
-  var genreTag = genre.toLowerCase().replace(/ /g, "").replace(/\//g, "");
-  var moodTags = moods.map(function (m: string) { return "#" + m.toLowerCase(); }).join(" ");
-  var tags = "#" + genreTag + " " + moodTags + " #newmusic #spotify #aimusic #r3alson";
+  // 태그 폴백
+  if (!tags) {
+    var genreTag = genre.toLowerCase().replace(/ /g, "").replace(/\//g, "");
+    var moodTags = moods.map(function (m: string) { return "#" + m.toLowerCase(); }).join(" ");
+    tags = "#" + genreTag + " " + moodTags + " #newmusic #spotify #aimusic #r3alson";
+  }
 
   return NextResponse.json({
     prompt: prompt,
     lyrics: lyrics,
     title: title,
-    tags: tags
+    tags: tags,
+    isAI: isAI
   });
 }
