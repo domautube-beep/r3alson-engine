@@ -135,7 +135,7 @@ function getRecommendations(selectedGenre: string) {
 }
 
 export default function CreatePage() {
-  var { apiKey, isKeySet } = useApiKey();
+  var { apiKey, isKeySet, ownerPassword, isOwnerMode } = useApiKey();
 
   // 상태 관리
   var [step, setStep] = useState(1);
@@ -303,6 +303,7 @@ export default function CreatePage() {
       // 각 트랙별 API 호출로 프롬프트 생성
       var headers: Record<string, string> = { "Content-Type": "application/json" };
       if (apiKey) headers["x-api-key"] = apiKey;
+      if (isOwnerMode && ownerPassword) headers["x-owner-password"] = ownerPassword;
 
       try {
         var trackRes = await fetch("/api/generate", {
@@ -381,6 +382,7 @@ export default function CreatePage() {
     try {
       var headers: Record<string, string> = { "Content-Type": "application/json" };
       if (apiKey) headers["x-api-key"] = apiKey;
+      if (isOwnerMode && ownerPassword) headers["x-owner-password"] = ownerPassword;
 
       var res = await fetch("/api/generate", {
         method: "POST",

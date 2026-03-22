@@ -325,8 +325,14 @@ function generateTitle(genre: string, moods: string[]): string {
 export async function POST(request: NextRequest) {
   // 보안: API 키 우선순위
   // 1. 사용자가 직접 입력한 키 (헤더)
-  // 2. 오너 키 (Vercel 환경변수 — 너만 쓰는 서버 키)
-  var apiKey = request.headers.get("x-api-key") || process.env.OWNER_ANTHROPIC_KEY || "";
+  // 2. 오너 비밀번호 인증 시 → 서버 환경변수의 오너 키 사용
+  var apiKey = request.headers.get("x-api-key") || "";
+  var ownerPassword = request.headers.get("x-owner-password") || "";
+
+  // 오너 인증: 비밀번호 맞으면 서버의 오너 키 사용
+  if (!apiKey && ownerPassword && ownerPassword === process.env.OWNER_PASSWORD) {
+    apiKey = process.env.OWNER_ANTHROPIC_KEY || "";
+  }
 
   var body = await request.json();
   var { genre, moods, bpm, vocal, instruments, lyricsMode, lyricsTheme, language, sectionLength } = body;

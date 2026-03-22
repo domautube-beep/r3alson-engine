@@ -5,11 +5,14 @@ import Link from "next/link";
 import { useApiKey } from "@/lib/api-key-context";
 
 export default function SettingsPage() {
-  var { apiKey, setApiKey, isKeySet, rememberSession, setRememberSession, clearKey } = useApiKey();
+  var { apiKey, setApiKey, isKeySet, ownerPassword, setOwnerPassword, isOwnerMode, rememberSession, setRememberSession, clearKey } = useApiKey();
   var [inputKey, setInputKey] = useState(apiKey);
+  var [inputOwnerPw, setInputOwnerPw] = useState(ownerPassword);
   var [showKey, setShowKey] = useState(false);
   var [testStatus, setTestStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
   var [testMessage, setTestMessage] = useState("");
+  var [ownerTestStatus, setOwnerTestStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
+  var [ownerTestMessage, setOwnerTestMessage] = useState("");
 
   async function testConnection() {
     setTestStatus("testing");
@@ -49,6 +52,87 @@ export default function SettingsPage() {
       </header>
 
       <main className="flex-1 px-5 py-4 space-y-6 pb-24">
+
+        {/* 오너 모드 */}
+        <section className="glass-card p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(52,211,153,0.2), rgba(16,185,129,0.2))" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34D399" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </div>
+            <div>
+              <h2 className="font-bold">오너 모드</h2>
+              <p className="text-xs" style={{ color: "#7A7A8E" }}>비밀번호로 서버 API 키 사용 (운영자 전용)</p>
+            </div>
+          </div>
+
+          {/* 상태 */}
+          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl" style={{ backgroundColor: isOwnerMode ? "rgba(52, 211, 153, 0.08)" : "rgba(122, 122, 142, 0.08)" }}>
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: isOwnerMode ? "#34D399" : "#7A7A8E" }} />
+            <span className="text-xs font-medium" style={{ color: isOwnerMode ? "#34D399" : "#7A7A8E" }}>
+              {isOwnerMode ? "오너 모드 활성" : "비활성"}
+            </span>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-sm font-semibold block">오너 비밀번호</label>
+            <input
+              type="password"
+              value={inputOwnerPw}
+              onChange={function(e) { setInputOwnerPw(e.target.value); setOwnerTestStatus("idle"); }}
+              placeholder="비밀번호 입력"
+              className="input-dark"
+            />
+
+            <div className="flex gap-2">
+              <button
+                onClick={async function() {
+                  setOwnerTestStatus("testing");
+                  try {
+                    var res = await fetch("/api/generate", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json", "x-owner-password": inputOwnerPw },
+                      body: JSON.stringify({ genre: "Pop", moods: ["Happy"], bpm: 120, lyricsMode: "none" })
+                    });
+                    var data = await res.json();
+                    if (data.isAI) {
+                      setOwnerTestStatus("success");
+                      setOwnerTestMessage("인증 성공!");
+                      setOwnerPassword(inputOwnerPw);
+                    } else {
+                      setOwnerTestStatus("error");
+                      setOwnerTestMessage("비밀번호가 틀렸습니다");
+                    }
+                  } catch (err) {
+                    setOwnerTestStatus("error");
+                    setOwnerTestMessage("네트워크 오류");
+                  }
+                }}
+                disabled={!inputOwnerPw || ownerTestStatus === "testing"}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                style={{
+                  backgroundColor: ownerTestStatus === "success" ? "rgba(52,211,153,0.15)" : ownerTestStatus === "error" ? "rgba(248,113,113,0.15)" : "rgba(52,211,153,0.15)",
+                  color: ownerTestStatus === "success" ? "#34D399" : ownerTestStatus === "error" ? "#F87171" : "#34D399",
+                  opacity: !inputOwnerPw ? 0.3 : 1
+                }}
+              >
+                {ownerTestStatus === "testing" ? "인증 중..." : ownerTestStatus === "success" ? "인증 성공!" : ownerTestStatus === "error" ? "재시도" : "인증"}
+              </button>
+              {isOwnerMode && (
+                <button
+                  onClick={function() { clearKey(); setInputOwnerPw(""); setOwnerTestStatus("idle"); }}
+                  className="px-4 py-2.5 rounded-xl text-sm"
+                  style={{ backgroundColor: "rgba(248,113,113,0.1)", color: "#F87171" }}
+                >
+                  해제
+                </button>
+              )}
+            </div>
+
+            {ownerTestMessage && (
+              <p className="text-xs" style={{ color: ownerTestStatus === "success" ? "#34D399" : "#F87171" }}>{ownerTestMessage}</p>
+            )}
+          </div>
+        </section>
 
         {/* AI 엔진 설정 */}
         <section className="glass-card p-5">
