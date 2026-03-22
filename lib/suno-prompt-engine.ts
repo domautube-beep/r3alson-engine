@@ -193,8 +193,8 @@ var VOCAL_PROMPT_MAP: Record<string, string> = {
   "Instrumental (No Vocals)": "instrumental, no vocals"
 };
 
-// ===== 수노 프로덕션 시트 생성 (LIL-PITY 형식) =====
-// 수노가 풍부하게 파싱할 수 있는 프로덕션 디렉션 출력
+// ===== 감성 프로덕션 프롬프트 생성 =====
+// 태그 나열이 아닌, 감정과 장면이 담긴 음악적 서사로 프롬프트를 작성
 export function generateStylePrompt(params: {
   genre: string;
   moods: string[];
@@ -203,81 +203,107 @@ export function generateStylePrompt(params: {
   instruments: string[];
 }): string {
   var genreLower = params.genre.toLowerCase();
-  var moodStr = params.moods.join(", ").toLowerCase();
 
   // 장르 사운드 DNA
   var genreStyle = GENRE_STYLE_MAP[genreLower] || genreLower;
 
   // 악기
-  var instStr = "";
-  if (params.instruments.length > 0) {
-    instStr = params.instruments.join(", ").toLowerCase();
-  } else {
-    var defaultInst = GENRE_CORE_INSTRUMENTS[genreLower];
-    if (defaultInst) instStr = defaultInst.join(", ");
-  }
+  var userInst = params.instruments.length > 0
+    ? params.instruments.join(", ").toLowerCase()
+    : "";
+  var defaultInst = GENRE_CORE_INSTRUMENTS[genreLower];
+  var instStr = userInst || (defaultInst ? defaultInst.join(", ") : "");
 
-  // 무드 → 텍스처 변환
-  var textureMap: Record<string, string> = {
-    "melancholic": "intimate space, warm low-end, restrained dynamics, soft decay tails",
-    "dark": "low-mid weight, muted highs, tense atmosphere, sparse arrangement",
-    "eerie": "unsettling textures, detuned elements, wide stereo field, tension builds",
-    "chill": "warm compression, soft transients, laid-back groove, gentle sway",
-    "dreamy": "airy reverb, soft tails, floating textures, hazy atmosphere",
-    "aggressive": "hard-hitting transients, distorted edges, compressed dynamics, in-your-face",
-    "epic": "wide stereo, stacked layers, rising dynamics, powerful crescendos",
-    "nostalgic": "vintage warmth, tape saturation, analog character, lo-fi charm",
-    "romantic": "intimate close-mic, warm harmonics, gentle swell, tender dynamics",
-    "energetic": "punchy transients, driving momentum, bright presence, upbeat bounce",
-    "atmospheric": "vast soundscapes, evolving textures, deep reverb, immersive space",
-    "euphoric": "soaring builds, bright synths, uplifting energy, festival peak",
-    "peaceful": "minimal arrangement, soft dynamics, natural space, calming resonance",
-    "groovy": "locked pocket, syncopated feel, head-nod bounce, tight rhythm section",
-    "cinematic": "orchestral width, dynamic sweeps, thematic motifs, dramatic arc",
-    "mysterious": "shadowy textures, sparse reveals, tension and release, enigmatic mood",
-    "haunting": "ghostly reverb, distant echoes, fragile melody, cold atmosphere"
+  // 무드 → 감성 장면 묘사 (태그가 아닌 감정이 담긴 디렉션)
+  var emotionSceneMap: Record<string, string> = {
+    "melancholic": "a voice that aches with things left unsaid, like watching rain trace lines down a cold window at 3am, restrained but breaking underneath",
+    "dark": "shadows pressing in from the edges, tension coiled in every silence, the kind of sound that makes you hold your breath",
+    "eerie": "something moving just out of sight, a music box playing in an empty hallway, beautiful but wrong in a way you can't name",
+    "chill": "feet up, eyes half-closed, the golden hour stretching forever, every sound wrapped in warm cotton",
+    "dreamy": "floating between sleep and waking, colors bleeding into each other, a memory you can't quite hold onto",
+    "aggressive": "teeth clenched, bass shaking the walls, every hit lands like a fist, no room to breathe, no apologies",
+    "epic": "standing at the edge of something massive, the whole sky opening up, music that makes your chest expand",
+    "nostalgic": "the smell of a place you used to know, sunlight through dusty curtains, a song playing from another room in another year",
+    "romantic": "two people breathing in the same small space, fingertips almost touching, every note a confession whispered too quietly",
+    "energetic": "heart pounding, feet moving before your brain catches up, the rush of breaking free into open air",
+    "atmospheric": "sound stretching in all directions like fog, no walls no ceiling, just depth and presence and the feeling of being inside the music",
+    "euphoric": "arms raised, tears and laughter at the same time, the moment the whole crowd becomes one voice",
+    "peaceful": "the world gone quiet, just breath and birdsong, a stillness so deep it feels like being held",
+    "groovy": "head nodding before you even decide to, the bass sitting right in your chest, a walk that becomes a strut",
+    "cinematic": "the camera pulling back to reveal the whole scene, strings swelling like a tide, every beat a frame in a story bigger than words",
+    "mysterious": "a door left half-open, footsteps echoing in a space you can't see the edges of, beautiful and uncertain",
+    "haunting": "a melody that stays after the music stops, like a ghost that doesn't know it's gone, fragile and permanent at once",
+    "happy": "sunshine cracking through clouds, laughing for no reason, the effortless joy of being completely present",
+    "triumphant": "standing on top of everything that tried to stop you, chest out, the sound of vindication and earned glory",
+    "bittersweet": "smiling at something that's already gone, loving the memory even though it cuts, beauty tangled with loss",
+    "tender": "holding something precious with both hands, afraid to grip too tight, a gentleness that takes more strength than force",
+    "intense": "eyes locked, every second stretched to breaking, the space between notes charged like lightning about to strike",
+    "surreal": "gravity optional, time folding back on itself, sounds that shouldn't exist fitting together perfectly",
+    "warm": "like being wrapped in a voice, golden tones that hum in your ribs, the sonic equivalent of coming home",
+    "bold": "stepping into the room like you built it, every sound placed with absolute intention, confidence made audible",
+    "rebellious": "breaking every rule on purpose, the thrill of saying what nobody wants to hear, raw and unapologetic",
+    "sentimental": "holding an old photograph, the melody carrying the weight of years, simple notes that contain whole lifetimes",
+    "wistful": "reaching for something just beyond your fingertips, the ache of almost, a longing that's become its own comfort",
+    "fierce": "fire behind every word, the sound of someone who won't be silenced, controlled fury wrapped in melody",
+    "calm": "a lake at dawn, not a ripple, sound so still it becomes a mirror for your own thoughts",
+    "playful": "winking at the listener, unexpected turns that make you smile, music that doesn't take itself too seriously but is secretly brilliant",
+    "psychedelic": "colors you can hear, sounds you can taste, the walls breathing in rhythm, reality gently unhinging"
   };
 
-  var textures: string[] = [];
+  // 감성 장면 조합
+  var emotionScenes: string[] = [];
   params.moods.forEach(function(m) {
-    var t = textureMap[m.toLowerCase()];
-    if (t) textures.push(t);
+    var scene = emotionSceneMap[m.toLowerCase()];
+    if (scene) emotionScenes.push(scene);
   });
-  var textureStr = textures.length > 0 ? textures[0] : "balanced mix, clear space";
 
-  // 보컬 프롬프트
-  var vocalPrompt = "";
-  if (params.vocal) {
-    vocalPrompt = VOCAL_PROMPT_MAP[params.vocal] || params.vocal.toLowerCase();
-  }
-
-  // 다이나믹 플로우 (장르 기반)
-  var dynamicMap: Record<string, string> = {
-    "hip hop": "verse groove lock, chorus lift, bridge strip-back, energy build to final hook",
-    "trap": "sparse intro, verse pocket, explosive hook, bridge half-time drop, final hook stack",
-    "pop": "immediate hook tease, verse build, pre-chorus lift, chorus peak, bridge contrast, final chorus add layers",
-    "r&b": "smooth intro, intimate verse, pre-chorus tension, lush chorus bloom, bridge vulnerability, outro fade",
-    "rock": "guitar intro, driving verse, pre-chorus build, explosive chorus, bridge breakdown, anthem finale",
-    "ambient": "slow evolution, gradual layering, peak density at midpoint, gentle dissolution",
-    "edm": "filtered intro, build tension, drop impact, breakdown, second drop bigger, energy sustain",
-    "jazz": "head statement, verse swing, improvised feel sections, return to head, outro vamp"
+  // 보컬 감성 묘사
+  var vocalEmotionMap: Record<string, string> = {
+    "Deep Male Vocals": "a voice that comes from somewhere deep, like thunder heard through walls, warm and grounding, the kind of voice that makes silence feel safe",
+    "Smooth Male Vocals": "silk poured over glass, effortless and flowing, a voice that never pushes but always arrives, like a river finding its way",
+    "Raspy Male Vocals": "gravel and honey, every word earned through living, cracks in the voice where the truth leaks through",
+    "Falsetto Male": "reaching up past his own ceiling, fragile and soaring, a man letting himself be transparent",
+    "Male Rap": "words hitting like controlled detonations, each syllable placed with sniper precision, swagger built into the rhythm of breathing",
+    "Male Whisper": "leaning in close enough to feel the breath, secrets shared in the dark, intimacy as a weapon",
+    "Soft Female Vocals": "a voice like candlelight, gentle enough to land on skin without leaving a mark, warmth that wraps around you",
+    "Powerful Female Vocals": "a voice that could fill a cathedral or shatter glass, commanding the room by simply existing, power worn like a second skin",
+    "Breathy Female": "more air than sound, words dissolving as they leave her lips, the feeling of someone thinking out loud in your ear",
+    "Angelic Female": "crystal clear and impossibly pure, a voice from somewhere above the clouds, piercing through noise like light through water",
+    "Female Rap": "sharp as a blade hidden in silk, every bar landing with surgical precision, confidence that doesn't need volume",
+    "Female Whisper": "close enough to hear the space between words, vulnerability disguised as intimacy, dangerous softness",
+    "Choir": "many voices becoming one breath, harmonies stacking like cathedral light, the sound of belonging to something larger",
+    "Distant Reverb Vocals": "a voice calling from across a valley, words washing in and out like tide, presence felt more than heard",
+    "Auto-tuned Vocals": "pitch bending like emotion made visible, smooth robotic perfection with human cracks showing through, modern vulnerability",
+    "Vocoder": "human feeling processed through machine logic, the uncanny beauty of a voice becoming an instrument",
+    "Spoken Word": "conversational truth, no melody to hide behind, just raw words landing where they need to",
+    "Humming": "the melody you hum when you think no one is listening, pure feeling without words, the sound before language",
+    "Instrumental (No Vocals)": "letting the instruments speak, every note carrying the weight that words would, silence where the voice would be becomes its own statement"
   };
 
-  var dynamicFlow = "";
-  Object.keys(dynamicMap).forEach(function(key) {
-    if (genreLower.indexOf(key) !== -1) dynamicFlow = dynamicMap[key];
-  });
-  if (!dynamicFlow) dynamicFlow = "intro build, verse establish, chorus peak, bridge contrast, finale resolve";
+  var vocalEmotion = params.vocal ? (vocalEmotionMap[params.vocal] || "") : "";
 
-  // 프로덕션 시트 조립
-  var lines: string[] = [];
-  lines.push(genreStyle + ", " + moodStr + ", " + params.bpm + " bpm");
-  lines.push(instStr);
-  lines.push(textureStr);
-  lines.push(dynamicFlow);
-  if (vocalPrompt) lines.push(vocalPrompt);
+  // 최종 프롬프트 조립 — 감성 서사 형식
+  var promptParts: string[] = [];
 
-  return lines.join(", ");
+  // 1. 장르 DNA + BPM
+  promptParts.push(genreStyle);
+
+  // 2. 무드 태그 (수노 파싱용)
+  promptParts.push(params.moods.join(", ").toLowerCase());
+
+  // 3. BPM
+  promptParts.push(params.bpm + " bpm");
+
+  // 4. 악기
+  if (instStr) promptParts.push(instStr);
+
+  // 5. 감성 장면 (첫 번째 무드의 감정 묘사)
+  if (emotionScenes.length > 0) promptParts.push(emotionScenes[0]);
+
+  // 6. 보컬 감성
+  if (vocalEmotion) promptParts.push(vocalEmotion);
+
+  return promptParts.join(", ");
 }
 
 // 장르별 핵심 악기 (사용자 미선택 시 폴백, 2-3개만)
