@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import trendsData from "@/data/trends.json";
 import { useApiKey } from "@/lib/api-key-context";
+import { TOPIC_CATEGORIES, WRITING_TECHNIQUES, HOOK_PATTERNS, generateRecommendation, getRelatedSubThemes, sortCategoriesByGenre, buildTopicPromptText } from "@/lib/topic-pool";
+import type { SubTheme, WritingTechnique as WTech, HookPattern, TopicRecommendation } from "@/lib/topic-pool";
 
 // ===== 장르 (50+) =====
 var GENRE_CATEGORIES: Record<string, string[]> = {
@@ -151,6 +153,21 @@ export default function CreatePage() {
   var [moodCategory, setMoodCategory] = useState("");
   var [lyricsMode, setLyricsMode] = useState("ai"); // none, ai, manual, hybrid
   var [lyricsTheme, setLyricsTheme] = useState("");
+  // 주제 추천 시스템
+  var [showTopicPicker, setShowTopicPicker] = useState(false);
+  var [topicStep, setTopicStep] = useState(1); // 1: 대분류, 2: 중분류, 3: 작법, 4: 단어블록+훅
+  var [selectedCategory, setSelectedCategory] = useState("");
+  var [selectedSubTheme, setSelectedSubTheme] = useState<SubTheme | null>(null);
+  var [selectedTechnique, setSelectedTechnique] = useState<WTech | null>(null);
+  var [recommendation, setRecommendation] = useState<TopicRecommendation | null>(null);
+  var [pickedObjects, setPickedObjects] = useState<string[]>([]);
+  var [pickedPlaces, setPickedPlaces] = useState<string[]>([]);
+  var [pickedTimes, setPickedTimes] = useState<string[]>([]);
+  var [pickedBody, setPickedBody] = useState<string[]>([]);
+  var [pickedSenses, setPickedSenses] = useState<string[]>([]);
+  var [pickedActions, setPickedActions] = useState<string[]>([]);
+  var [pickedSounds, setPickedSounds] = useState<string[]>([]);
+  var [selectedHook, setSelectedHook] = useState<HookPattern | null>(null);
   var [generatedLyrics, setGeneratedLyrics] = useState("");
   var [generatedPrompt, setGeneratedPrompt] = useState("");
   var [generatedTitle, setGeneratedTitle] = useState("");
@@ -1079,19 +1096,340 @@ export default function CreatePage() {
               })}
             </div>
 
-            {/* AI 가사: 주제 입력 */}
+            {/* AI 가사: 주제 추천 시스템 */}
             {(lyricsMode === "ai" || lyricsMode === "hybrid") && (
-              <div>
-                <label className="text-sm font-semibold block mb-2">
-                  주제 / 감정 / 키워드
-                </label>
-                <input
-                  type="text"
-                  value={lyricsTheme}
-                  onChange={function (e) { setLyricsTheme(e.target.value); }}
-                  placeholder="예: 새벽 3시의 고독, 이별 후 비 오는 거리"
-                  className="input-dark text-sm"
-                />
+              <div className="space-y-3">
+                {/* 주제 추천받기 버튼 */}
+                {!showTopicPicker && (
+                  <button
+                    onClick={function() { setShowTopicPicker(true); setTopicStep(1); }}
+                    className="w-full p-4 rounded-xl border border-dashed transition-all text-left"
+                    style={{ borderColor: "rgba(139, 92, 246, 0.3)", backgroundColor: "rgba(139, 92, 246, 0.05)" }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(236,72,153,0.2))" }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">주제 추천받기</p>
+                        <p className="text-xs" style={{ color: "#7A7A8E" }}>주제 + 작법 + 소재 + 훅을 조합해서 가사 방향을 잡아보세요</p>
+                      </div>
+                    </div>
+                  </button>
+                )}
+
+                {/* 주제 추천 시스템 패널 */}
+                {showTopicPicker && (
+                  <div className="glass-card p-4 space-y-4">
+                    {/* 헤더 + 닫기 */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {topicStep > 1 && (
+                          <button onClick={function() { setTopicStep(topicStep - 1); }} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#111118" }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7A7A8E" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                          </button>
+                        )}
+                        <span className="text-sm font-bold">
+                          {topicStep === 1 ? "1. 주제 선택" : topicStep === 2 ? "2. 세부 주제" : topicStep === 3 ? "3. 작법 선택" : "4. 소재 & 훅 선택"}
+                        </span>
+                      </div>
+                      <button onClick={function() { setShowTopicPicker(false); }} className="text-xs px-2 py-1 rounded-lg" style={{ color: "#7A7A8E", backgroundColor: "#111118" }}>닫기</button>
+                    </div>
+
+                    {/* 진행 바 */}
+                    <div className="flex gap-1">
+                      {[1,2,3,4].map(function(s) {
+                        return <div key={s} className="h-1 flex-1 rounded-full" style={{ background: s <= topicStep ? "linear-gradient(90deg, #8B5CF6, #EC4899)" : "#1E1E2E" }} />;
+                      })}
+                    </div>
+
+                    {/* Step 1: 대분류 */}
+                    {topicStep === 1 && (
+                      <div className="grid grid-cols-2 gap-2">
+                        {sortCategoriesByGenre(genre).map(function(cat) {
+                          return (
+                            <button
+                              key={cat.id}
+                              onClick={function() { setSelectedCategory(cat.id); setTopicStep(2); }}
+                              className="p-3 rounded-xl text-left transition-all"
+                              style={{ backgroundColor: "#111118", border: "1px solid #1E1E2E" }}
+                            >
+                              <span className="text-lg block mb-1">{cat.emoji}</span>
+                              <span className="text-sm font-semibold block">{cat.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Step 2: 중분류 */}
+                    {topicStep === 2 && (
+                      <div className="space-y-2">
+                        {TOPIC_CATEGORIES.filter(function(c) { return c.id === selectedCategory; }).map(function(cat) {
+                          return cat.subThemes.map(function(st) {
+                            return (
+                              <button
+                                key={st.id}
+                                onClick={function() { setSelectedSubTheme(st); setTopicStep(3); }}
+                                className="w-full p-3 rounded-xl text-left transition-all"
+                                style={{ backgroundColor: "#111118", border: "1px solid #1E1E2E" }}
+                              >
+                                <span className="text-sm font-semibold">{st.label}</span>
+                                <div className="flex gap-1 mt-1.5">
+                                  {st.tags.map(function(t) {
+                                    return <span key={t} className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: "rgba(139,92,246,0.1)", color: "#8B5CF6" }}>{t}</span>;
+                                  })}
+                                </div>
+                              </button>
+                            );
+                          });
+                        })}
+                        {/* 연관 추천 */}
+                        {selectedSubTheme && (
+                          <div className="pt-2 border-t" style={{ borderColor: "#1E1E2E" }}>
+                            <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>연관 추천</p>
+                            <div className="flex gap-1.5 flex-wrap">
+                              {getRelatedSubThemes(selectedSubTheme, genre).map(function(rst) {
+                                return (
+                                  <button key={rst.id} onClick={function() { setSelectedSubTheme(rst); setTopicStep(3); }} className="text-xs px-2.5 py-1 rounded-lg" style={{ backgroundColor: "rgba(236,72,153,0.1)", color: "#EC4899" }}>
+                                    {rst.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Step 3: 작법 선택 */}
+                    {topicStep === 3 && selectedSubTheme && (
+                      <div className="space-y-2">
+                        {WRITING_TECHNIQUES.map(function(tech) {
+                          var relevance = 0;
+                          tech.tags.forEach(function(t) { if (selectedSubTheme && selectedSubTheme.tags.indexOf(t) !== -1) relevance++; });
+                          return { tech: tech, relevance: relevance };
+                        }).sort(function(a, b) { return b.relevance - a.relevance; }).map(function(item) {
+                          var tech = item.tech;
+                          var isRelevant = item.relevance > 0;
+                          return (
+                            <button
+                              key={tech.id}
+                              onClick={function() {
+                                setSelectedTechnique(tech);
+                                if (selectedSubTheme) {
+                                  var rec = generateRecommendation(selectedSubTheme, tech, genre);
+                                  setRecommendation(rec);
+                                  setPickedObjects([]);
+                                  setPickedPlaces([]);
+                                  setPickedTimes([]);
+                                  setPickedBody([]);
+                                  setPickedSenses([]);
+                                  setPickedActions([]);
+                                  setPickedSounds([]);
+                                  setSelectedHook(rec.hookPattern);
+                                }
+                                setTopicStep(4);
+                              }}
+                              className="w-full p-3 rounded-xl text-left transition-all"
+                              style={{
+                                backgroundColor: "#111118",
+                                border: "1px solid " + (isRelevant ? "rgba(139,92,246,0.3)" : "#1E1E2E"),
+                                opacity: isRelevant ? 1 : 0.5
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-semibold">{tech.label}</span>
+                                {isRelevant && <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(139,92,246,0.15)", color: "#8B5CF6" }}>추천</span>}
+                              </div>
+                              <p className="text-xs mt-1" style={{ color: "#7A7A8E" }}>{tech.desc}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Step 4: 단어 블록 + 훅 선택 */}
+                    {topicStep === 4 && recommendation && (
+                      <div className="space-y-4">
+                        {/* 셔플 버튼 */}
+                        <button
+                          onClick={function() {
+                            if (selectedSubTheme && selectedTechnique) {
+                              var rec = generateRecommendation(selectedSubTheme, selectedTechnique, genre);
+                              setRecommendation(rec);
+                              setPickedObjects([]);
+                              setPickedPlaces([]);
+                              setPickedTimes([]);
+                              setPickedBody([]);
+                              setPickedSenses([]);
+                              setPickedActions([]);
+                              setPickedSounds([]);
+                              setSelectedHook(rec.hookPattern);
+                            }
+                          }}
+                          className="w-full py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
+                          style={{ backgroundColor: "rgba(139,92,246,0.1)", color: "#8B5CF6" }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+                          다른 단어 블록 뽑기
+                        </button>
+
+                        {/* 사물 */}
+                        <div>
+                          <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>사물/이미지 (탭하여 선택)</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {recommendation.objects.map(function(obj) {
+                              var picked = pickedObjects.indexOf(obj) !== -1;
+                              return (
+                                <button key={obj} onClick={function() { setPickedObjects(picked ? pickedObjects.filter(function(o) { return o !== obj; }) : pickedObjects.concat([obj])); }} className="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" style={{ backgroundColor: picked ? "rgba(139,92,246,0.2)" : "#111118", color: picked ? "#A78BFA" : "#7A7A8E", border: "1px solid " + (picked ? "#8B5CF6" : "#1E1E2E") }}>
+                                  {obj}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* 장소 */}
+                        <div>
+                          <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>장소</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {recommendation.places.map(function(pl) {
+                              var picked = pickedPlaces.indexOf(pl) !== -1;
+                              return (
+                                <button key={pl} onClick={function() { setPickedPlaces(picked ? pickedPlaces.filter(function(p) { return p !== pl; }) : pickedPlaces.concat([pl])); }} className="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" style={{ backgroundColor: picked ? "rgba(236,72,153,0.2)" : "#111118", color: picked ? "#EC4899" : "#7A7A8E", border: "1px solid " + (picked ? "#EC4899" : "#1E1E2E") }}>
+                                  {pl}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* 시간 + 동작 + 소리 (한 줄씩) */}
+                        <div className="grid grid-cols-3 gap-3">
+                          <div>
+                            <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>시간</p>
+                            <div className="space-y-1">
+                              {recommendation.times.map(function(t) {
+                                var picked = pickedTimes.indexOf(t) !== -1;
+                                return (
+                                  <button key={t} onClick={function() { setPickedTimes(picked ? pickedTimes.filter(function(x) { return x !== t; }) : pickedTimes.concat([t])); }} className="w-full px-2 py-1.5 rounded-lg text-[11px] text-left transition-all" style={{ backgroundColor: picked ? "rgba(52,211,153,0.15)" : "#111118", color: picked ? "#34D399" : "#7A7A8E", border: "1px solid " + (picked ? "rgba(52,211,153,0.3)" : "#1E1E2E") }}>
+                                    {t}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>동작</p>
+                            <div className="space-y-1">
+                              {recommendation.actions.slice(0, 3).map(function(a) {
+                                var picked = pickedActions.indexOf(a) !== -1;
+                                return (
+                                  <button key={a} onClick={function() { setPickedActions(picked ? pickedActions.filter(function(x) { return x !== a; }) : pickedActions.concat([a])); }} className="w-full px-2 py-1.5 rounded-lg text-[11px] text-left transition-all" style={{ backgroundColor: picked ? "rgba(251,191,36,0.15)" : "#111118", color: picked ? "#FBBF24" : "#7A7A8E", border: "1px solid " + (picked ? "rgba(251,191,36,0.3)" : "#1E1E2E") }}>
+                                    {a}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>소리</p>
+                            <div className="space-y-1">
+                              {recommendation.sounds.map(function(s) {
+                                var picked = pickedSounds.indexOf(s) !== -1;
+                                return (
+                                  <button key={s} onClick={function() { setPickedSounds(picked ? pickedSounds.filter(function(x) { return x !== s; }) : pickedSounds.concat([s])); }} className="w-full px-2 py-1.5 rounded-lg text-[11px] text-left transition-all" style={{ backgroundColor: picked ? "rgba(96,165,250,0.15)" : "#111118", color: picked ? "#60A5FA" : "#7A7A8E", border: "1px solid " + (picked ? "rgba(96,165,250,0.3)" : "#1E1E2E") }}>
+                                    {s}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 감각 형용사 + 신체 */}
+                        <div>
+                          <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>감각/신체</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {recommendation.senses.concat(recommendation.body).map(function(sb) {
+                              var pickedS = pickedSenses.indexOf(sb) !== -1;
+                              var pickedB = pickedBody.indexOf(sb) !== -1;
+                              var isPicked = pickedS || pickedB;
+                              return (
+                                <button key={sb} onClick={function() {
+                                  if (recommendation && recommendation.senses.indexOf(sb) !== -1) {
+                                    setPickedSenses(pickedS ? pickedSenses.filter(function(x) { return x !== sb; }) : pickedSenses.concat([sb]));
+                                  } else {
+                                    setPickedBody(pickedB ? pickedBody.filter(function(x) { return x !== sb; }) : pickedBody.concat([sb]));
+                                  }
+                                }} className="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" style={{ backgroundColor: isPicked ? "rgba(244,114,182,0.15)" : "#111118", color: isPicked ? "#F472B6" : "#7A7A8E", border: "1px solid " + (isPicked ? "rgba(244,114,182,0.3)" : "#1E1E2E") }}>
+                                  {sb}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* 훅 구조 */}
+                        <div>
+                          <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#4A4A5E" }}>훅 구조 패턴</p>
+                          <div className="space-y-1.5">
+                            {HOOK_PATTERNS.filter(function(hp) {
+                              if (!selectedSubTheme) return true;
+                              var st = selectedSubTheme;
+                              var score = 0;
+                              hp.tags.forEach(function(t) { if (st.tags.indexOf(t) !== -1) score++; });
+                              return score > 0;
+                            }).slice(0, 4).map(function(hp) {
+                              var isSelected = selectedHook && selectedHook.id === hp.id;
+                              return (
+                                <button key={hp.id} onClick={function() { setSelectedHook(hp); }} className="w-full p-2.5 rounded-xl text-left transition-all" style={{ backgroundColor: isSelected ? "rgba(139,92,246,0.15)" : "#111118", border: "1px solid " + (isSelected ? "#8B5CF6" : "#1E1E2E") }}>
+                                  <span className="text-xs font-semibold" style={{ color: isSelected ? "#A78BFA" : "#E5E5E5" }}>{hp.label}</span>
+                                  <p className="text-[11px] mt-0.5" style={{ color: "#7A7A8E" }}>{hp.structure}</p>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* 조합 적용 버튼 */}
+                        <button
+                          onClick={function() {
+                            if (selectedSubTheme && selectedTechnique && selectedHook) {
+                              var prompt = buildTopicPromptText(
+                                selectedSubTheme, selectedTechnique,
+                                pickedObjects, pickedPlaces, pickedTimes,
+                                pickedBody, pickedSenses, pickedActions, pickedSounds,
+                                selectedHook
+                              );
+                              setLyricsTheme(prompt);
+                              setShowTopicPicker(false);
+                            }
+                          }}
+                          disabled={!selectedHook || (pickedObjects.length + pickedPlaces.length + pickedActions.length + pickedSounds.length) === 0}
+                          className={"w-full py-3 rounded-xl font-semibold text-white text-sm " + ((selectedHook && (pickedObjects.length + pickedPlaces.length + pickedActions.length + pickedSounds.length) > 0) ? "glow-btn" : "opacity-30")}
+                        >
+                          이 조합으로 가사 방향 잡기
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 주제 직접 입력 / 추천 결과 표시 */}
+                <div>
+                  <label className="text-sm font-semibold block mb-2">
+                    {lyricsTheme && lyricsTheme.indexOf("Theme:") !== -1 ? "선택한 조합 (수정 가능)" : "주제 / 감정 / 키워드"}
+                  </label>
+                  <textarea
+                    value={lyricsTheme}
+                    onChange={function (e) { setLyricsTheme(e.target.value); }}
+                    placeholder="주제 추천을 사용하거나 직접 입력하세요. 예: 새벽 3시의 고독, 이별 후 비 오는 거리"
+                    rows={lyricsTheme && lyricsTheme.indexOf("Theme:") !== -1 ? 6 : 2}
+                    className="input-dark text-sm"
+                  />
+                </div>
               </div>
             )}
 
