@@ -118,14 +118,14 @@ export default async function Home() {
             <div
               className="rounded-3xl p-6 relative overflow-hidden"
               style={{
-                background: "linear-gradient(135deg, rgba(139,92,246,0.18) 0%, rgba(236,72,153,0.12) 50%, rgba(139,92,246,0.08) 100%)",
-                border: "1px solid rgba(139, 92, 246, 0.28)"
+                background: "#1A1A2E",
+                border: "1px solid #2A2A3E"
               }}
             >
-              {/* 배경 글로우 */}
+              {/* 악센트 라인 */}
               <div
-                className="absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl"
-                style={{ background: "rgba(139, 92, 246, 0.15)" }}
+                className="absolute top-0 left-0 w-full h-[2px]"
+                style={{ background: "linear-gradient(90deg, #8B5CF6, #EC4899)" }}
               />
               <div className="relative">
                 <p className="text-[11px] uppercase tracking-widest mb-3" style={{ color: "#8B5CF6" }}>
