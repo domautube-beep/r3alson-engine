@@ -10,8 +10,8 @@ const notoSansKR = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "R3ALSON Engine — AI 음악 히트메이커",
-  description: "데이터 기반 수노 프롬프트 + 가사 + 메타데이터 생성. 돈 되는 곡을 만드는 AI 엔진.",
+  title: "HitCraft — AI 음악 히트메이커",
+  description: "데이터 기반 수노 프롬프트 + 가사 + 메타데이터 생성. 데이터 기반으로 돈 되는 곡을 만드는 AI 엔진.",
 };
 
 export default function RootLayout({

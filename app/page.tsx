@@ -11,7 +11,7 @@ export default function Home() {
       <header className="flex items-center justify-between px-5 py-5">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-gradient">
-            R3ALSON
+            HitCraft
           </h1>
           <p className="text-[11px] tracking-widest uppercase" style={{ color: "#4A4A5E" }}>
             AI Music Hit Maker

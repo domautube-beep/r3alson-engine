@@ -421,7 +421,7 @@ export async function POST(request: NextRequest) {
   if (!tags) {
     var genreTag = genre.toLowerCase().replace(/ /g, "").replace(/\//g, "");
     var moodTags = moods.map(function (m: string) { return "#" + m.toLowerCase(); }).join(" ");
-    tags = "#" + genreTag + " " + moodTags + " #newmusic #spotify #aimusic #r3alson";
+    tags = "#" + genreTag + " " + moodTags + " #newmusic #spotify #aimusic #hitcraft";
   }
 
   return NextResponse.json({
